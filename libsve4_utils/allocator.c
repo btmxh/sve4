@@ -1,0 +1,146 @@
+#include "allocator.h"
+
+#include <assert.h>
+#include <stdalign.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "defines.h"
+
+void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
+                 size_t alignment) {
+  (void)self;
+  if (sve4_likely(alignment <= alignof(max_align_t)))
+    return malloc(size);
+  return aligned_alloc(alignment, size);
+}
+
+void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
+                  size_t alignment) {
+  (void)self;
+  if (sve4_likely(alignment <= alignof(max_align_t)))
+    return calloc(1, size);
+  void* ptr = aligned_alloc(alignment, size);
+  if (ptr)
+    memset(ptr, 0, size);
+  return ptr;
+}
+
+void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                size_t old_size, size_t new_size, size_t alignment) {
+  (void)self;
+  if (sve4_likely(alignment <= alignof(max_align_t)))
+    return realloc(ptr, new_size);
+  void* new_ptr = aligned_alloc(alignment, new_size);
+  if (new_ptr) {
+    size_t copy_size = old_size < new_size ? old_size : new_size;
+    if (ptr)
+      memcpy(new_ptr, ptr, copy_size);
+    free(ptr);
+  }
+  return new_ptr;
+}
+
+void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+  (void)self;
+  free(ptr);
+}
+
+static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
+                                                libc_grow, libc_free};
+
+static inline sve4_allocator_t*
+sve4_allocator_get_or_default(sve4_allocator_t* _Nullable allocator)
+    __attribute__((returns_nonnull));
+
+static inline sve4_allocator_t* _Nonnull sve4_allocator_get_or_default(
+    sve4_allocator_t* _Nullable allocator) {
+  return allocator ? allocator : (sve4_allocator_t*)&libc_allocator;
+}
+
+static void* alloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
+                                 size_t alignment) {
+  return self->grow(self, NULL, 0, size, alignment);
+}
+
+static void* calloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
+                                  size_t alignment) {
+  void* ptr = self->grow(self, NULL, 0, size, alignment);
+  if (ptr)
+    memset(ptr, 0, size);
+  return ptr;
+}
+
+#define GROW_BASED_ON_ALLOC_FUNC(func)                                         \
+  static void* grow_based_on_##func(sve4_allocator_t* _Nonnull self,           \
+                                    void* _Nullable ptr, size_t old_size,      \
+                                    size_t new_size, size_t alignment) {       \
+    void* new_ptr = self->func(self, new_size, alignment);                     \
+    if (new_ptr) {                                                             \
+      size_t copy_size = old_size < new_size ? old_size : new_size;            \
+      if (ptr)                                                                 \
+        memcpy(new_ptr, ptr, copy_size);                                       \
+      self->free(self, ptr);                                                   \
+    }                                                                          \
+    return new_ptr;                                                            \
+  }
+
+void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+  (void)self;
+  (void)ptr;
+}
+
+GROW_BASED_ON_ALLOC_FUNC(alloc)
+GROW_BASED_ON_ALLOC_FUNC(calloc)
+
+void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
+  assert(allocator->alloc || allocator->calloc ||
+         allocator->grow &&
+             "At least one allocation function must be provided");
+  if (!allocator->alloc)
+    allocator->alloc =
+        allocator->calloc ? allocator->calloc : alloc_based_on_grow;
+  if (!allocator->calloc)
+    allocator->calloc =
+        allocator->alloc ? allocator->alloc : calloc_based_on_grow;
+  if (!allocator->grow)
+    allocator->grow =
+        allocator->alloc ? grow_based_on_alloc : grow_based_on_calloc;
+  if (!allocator->free)
+    allocator->free = default_free;
+}
+
+void* _Nullable sve4_malloc(sve4_allocator_t* _Nullable allocator,
+                            size_t size) {
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  return alloc->alloc(alloc, size, alignof(max_align_t));
+}
+
+void* _Nullable sve4_calloc(sve4_allocator_t* _Nullable allocator,
+                            size_t size) {
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  return alloc->calloc(alloc, size, alignof(max_align_t));
+}
+
+void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
+                                   size_t size, size_t alignment) {
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  return alloc->alloc(alloc, size, alignment);
+}
+
+void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
+                             void* _Nullable ptr, size_t new_size) {
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  if (!ptr)
+    return alloc->alloc(alloc, new_size, alignof(max_align_t));
+  return alloc->grow(alloc, ptr, 0, new_size, alignof(max_align_t));
+}
+
+void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr) {
+  if (!ptr)
+    return;
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  alloc->free(alloc, ptr);
+}

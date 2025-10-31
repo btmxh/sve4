@@ -1,0 +1,35 @@
+# .clang-tidy
+---
+# Use modern style checks and some C-specific checks
+Checks: >
+  clang-analyzer-*,
+  cppcoreguidelines-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  misc-*,
+  -readability-braces-around-statements,
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+
+# Warnings as errors
+WarningsAsErrors: ''
+
+# Treat certain files differently (optional)
+HeaderFilterRegex: '.*'
+
+# Extra options
+CheckOptions:
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+  - key:             readability-identifier-naming.FunctionCase
+    value:           lower_case
+  - key:             readability-identifier-naming.StructCase
+    value:           lower_case
+  - key:             cppcoreguidelines-pro-bounds-array-to-pointer-decay.WarnOnPointerDecay
+    value:           true
+  - key:             modernize-use-nullptr.NullMacros
+    value:           'NULL'
+
+# Fixes can be applied automatically
+FormatStyle: file
+
