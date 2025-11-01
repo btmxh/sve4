@@ -12,6 +12,7 @@
 #ifdef _MSC_VER
 // https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30
 #define MAX_ALIGN alignof(double)
+#define aligned_alloc _aligned_malloc
 #else
 #define MAX_ALIGN alignof(max_align_t)
 #endif
