@@ -89,21 +89,27 @@ sve4_decode_libwebp_anim_alloc(sve4_decode_libwebp_anim_t* _Nonnull anim,
 sve4_decode_error_t
 sve4_decode_libwebp_anim_decode(sve4_decode_libwebp_anim_t* _Nonnull anim,
                                 sve4_decode_frame_t* frame) {
-  assert(frame && frame->buffer &&
-         frame->kind == SVE4_DECODE_FRAME_KIND_RAM_FRAME);
   uint8_t* buf = NULL;
   int timestamp = 0;
   if (!WebPAnimDecoderGetNext(anim->decoder, &buf, &timestamp)) {
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_GENERIC);
   }
 
+  if (frame) {
+    assert(frame->buffer && frame->kind == SVE4_DECODE_FRAME_KIND_RAM_FRAME);
+
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
-  sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame->buffer);
+    sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame->buffer);
 #pragma clang diagnostic pop
 
-  // buf is in RGBA8
-  memcpy(ram_frame->data[0], buf, ram_frame->linesizes[0] * anim->height);
+    // buf is in RGBA8
+    memcpy(ram_frame->data[0], buf, ram_frame->linesizes[0] * anim->height);
+    int64_t pts = timestamp * ms_to_ns;
+    frame->pts = anim->last_pts;
+    frame->duration = pts - anim->last_pts;
+    anim->last_pts = pts;
+  }
   return sve4_decode_success;
 }
 

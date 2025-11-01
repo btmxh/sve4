@@ -36,7 +36,7 @@ sve4_decode_libwebp_anim_alloc(sve4_decode_libwebp_anim_t* _Nonnull anim,
                                sve4_decode_frame_t* _Nonnull frame);
 sve4_decode_error_t
 sve4_decode_libwebp_anim_decode(sve4_decode_libwebp_anim_t* _Nonnull anim,
-                                sve4_decode_frame_t* _Nonnull frame);
+                                sve4_decode_frame_t* _Nullable frame);
 
 typedef struct {
   WebPData data;
