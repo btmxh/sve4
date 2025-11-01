@@ -8,7 +8,7 @@ typedef struct {
   bool* destroyed;
 } destructor_tracker;
 
-void destructor_tracker_destructor(char* data) {
+static void destructor_tracker_destructor(char* data) {
   destructor_tracker* tracker = (destructor_tracker*)data;
   if (tracker && tracker->destroyed)
     *tracker->destroyed = true;
@@ -145,6 +145,6 @@ static const MunitSuite test_suite = {
     "/buffer", test_suite_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE,
 };
 
-int main(int argc, char* argv[MUNIT_ARRAY_PARAM(argc + 1)]) {
+int main(int argc, char* argv[]) {
   return munit_suite_main(&test_suite, NULL, argc, argv);
 }

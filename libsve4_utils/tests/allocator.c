@@ -43,7 +43,7 @@ static MunitResult test_aligned_alloc(const MunitParameter params[],
   munit_assert_ptr_not_null(ptr);
   munit_assert_uint64(((uintptr_t)ptr) % alignment, ==, 0);
 
-  sve4_free(NULL, ptr);
+  sve4_aligned_free(NULL, ptr, alignment);
 
   return MUNIT_OK;
 }
@@ -114,6 +114,6 @@ static const MunitSuite test_suite = {
     "/allocator", test_suite_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE,
 };
 
-int main(int argc, char* argv[MUNIT_ARRAY_PARAM(argc + 1)]) {
+int main(int argc, char* argv[]) {
   return munit_suite_main(&test_suite, NULL, argc, argv);
 }

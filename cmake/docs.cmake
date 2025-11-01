@@ -13,7 +13,7 @@ FetchContent_Declare(
     mcss
     URL
         "https://github.com/friendlyanon/m.css/\
-        releases/download/release-1/mcss.zip"
+releases/download/release-1/mcss.zip"
     URL_MD5 00cd2757ebafb9bcba7f5d399b3bec7f
     SOURCE_DIR
     "${PROJECT_BINARY_DIR}/mcss"

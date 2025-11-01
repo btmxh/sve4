@@ -15,7 +15,8 @@ enum { MS = (int64_t)1e6 };
 #define ms *MS
 
 static uint32_t rgba8(const uint8_t* ptr) {
-  return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3] << 0);
+  return ((uint32_t)ptr[0] << 24) | ((uint32_t)ptr[1] << 16) |
+         ((uint32_t)ptr[2] << 8) | ((uint32_t)ptr[3] << 0);
 }
 
 static void read_binary_file(const char* path, void** data, size_t* size) {
@@ -33,8 +34,9 @@ static void read_binary_file(const char* path, void** data, size_t* size) {
 
 #define assert_success(err)                                                    \
   do {                                                                         \
-    munit_assert_int(err.source, ==, SVE4_DECODE_ERROR_SRC_DEFAULT);           \
-    munit_assert_int(err.error_code, ==, SVE4_DECODE_ERROR_DEFAULT_SUCCESS);   \
+    munit_assert_int((int)err.source, ==, SVE4_DECODE_ERROR_SRC_DEFAULT);      \
+    munit_assert_int((int)err.error_code, ==,                                  \
+                     SVE4_DECODE_ERROR_DEFAULT_SUCCESS);                       \
   } while (0);
 
 static MunitResult test_simple_webp_demux(const MunitParameter params[],
@@ -89,11 +91,11 @@ static MunitResult test_simple_webp_anim(const MunitParameter params[],
   err = sve4_decode_libwebp_anim_decode(&anim, &frame);
   assert_success(err);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
   const uint8_t* frame_data = ram_frame->data[0];
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
   munit_assert_ptr_not_null(frame_data);
   uint32_t u32_frame_data[16];
@@ -176,11 +178,11 @@ static MunitResult test_anim_webp_anim(const MunitParameter params[],
   err = sve4_decode_libwebp_anim_alloc(&anim, NULL, &frame);
   assert_success(err);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
   const uint8_t* frame_data = ram_frame->data[0];
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
   munit_assert_true(sve4_decode_libwebp_anim_has_more(&anim));
   err = sve4_decode_libwebp_anim_decode(&anim, &frame);
@@ -308,6 +310,6 @@ static const MunitSuite test_suite = {
     MUNIT_SUITE_OPTION_NONE,
 };
 
-int main(int argc, char* argv[MUNIT_ARRAY_PARAM(argc + 1)]) {
+int main(int argc, char* argv[]) {
   return munit_suite_main(&test_suite, NULL, argc, argv);
 }

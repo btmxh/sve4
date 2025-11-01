@@ -9,10 +9,21 @@
 
 #include "defines.h"
 
+#ifdef _MSC_VER
+// https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30
+#define MAX_ALIGN alignof(double)
+
+// MSVC does not have aligned_alloc, but has _aligned_malloc/_aligned_free
+#include <malloc.h>
+#define aligned_alloc _aligned_malloc
+#else
+#define MAX_ALIGN alignof(max_align_t)
+#endif
+
 static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
                         size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= alignof(max_align_t)))
+  if (sve4_likely(alignment <= MAX_ALIGN))
     return malloc(size);
   return aligned_alloc(alignment, size);
 }
@@ -20,7 +31,7 @@ static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
 static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
                          size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= alignof(max_align_t)))
+  if (sve4_likely(alignment <= MAX_ALIGN))
     return calloc(1, size);
   void* ptr = aligned_alloc(alignment, size);
   if (ptr)
@@ -31,7 +42,7 @@ static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
 static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
                        size_t old_size, size_t new_size, size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= alignof(max_align_t)))
+  if (sve4_likely(alignment <= MAX_ALIGN))
     return realloc(ptr, new_size);
   void* new_ptr = aligned_alloc(alignment, new_size);
   if (new_ptr) {
@@ -43,24 +54,30 @@ static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
   return new_ptr;
 }
 
-static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                      size_t alignment) {
   (void)self;
+#ifndef _MSC_VER
+  (void)alignment;
   free(ptr);
+#else
+  if (alignment > MAX_ALIGN)
+    _aligned_free(ptr);
+  else
+    free(ptr);
+#endif
 }
 
 static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
                                                 libc_grow, libc_free};
 
-static inline sve4_allocator_t*
-sve4_allocator_get_or_default(sve4_allocator_t* _Nullable allocator)
-    __attribute__((returns_nonnull));
-
 static inline sve4_allocator_t* _Nonnull sve4_allocator_get_or_default(
     sve4_allocator_t* _Nullable allocator) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   return allocator ? allocator : (sve4_allocator_t*)&libc_allocator;
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 }
 
 static void* alloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
@@ -85,23 +102,24 @@ static void* calloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
       size_t copy_size = old_size < new_size ? old_size : new_size;            \
       if (ptr)                                                                 \
         memcpy(new_ptr, ptr, copy_size);                                       \
-      self->free(self, ptr);                                                   \
+      self->free(self, ptr, alignment);                                        \
     }                                                                          \
     return new_ptr;                                                            \
   }
 
-static void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+static void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                         size_t alignment) {
   (void)self;
   (void)ptr;
+  (void)alignment;
 }
 
 GROW_BASED_ON_ALLOC_FUNC(alloc)
 GROW_BASED_ON_ALLOC_FUNC(calloc)
 
 void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
-  assert(allocator->alloc || allocator->calloc ||
-         allocator->grow &&
-             "At least one allocation function must be provided");
+  assert((allocator->alloc || allocator->calloc || allocator->grow) &&
+         "At least one allocation function must be provided");
   if (!allocator->alloc)
     allocator->alloc =
         allocator->calloc ? allocator->calloc : alloc_based_on_grow;
@@ -118,13 +136,13 @@ void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
 void* _Nullable sve4_malloc(sve4_allocator_t* _Nullable allocator,
                             size_t size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  return alloc->alloc(alloc, size, alignof(max_align_t));
+  return alloc->alloc(alloc, size, MAX_ALIGN);
 }
 
 void* _Nullable sve4_calloc(sve4_allocator_t* _Nullable allocator,
                             size_t size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  return alloc->calloc(alloc, size, alignof(max_align_t));
+  return alloc->calloc(alloc, size, MAX_ALIGN);
 }
 
 void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
@@ -137,13 +155,21 @@ void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
                              void* _Nullable ptr, size_t new_size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
   if (!ptr)
-    return alloc->alloc(alloc, new_size, alignof(max_align_t));
-  return alloc->grow(alloc, ptr, 0, new_size, alignof(max_align_t));
+    return alloc->alloc(alloc, new_size, MAX_ALIGN);
+  return alloc->grow(alloc, ptr, 0, new_size, MAX_ALIGN);
 }
 
 void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr) {
   if (!ptr)
     return;
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  alloc->free(alloc, ptr);
+  alloc->free(alloc, ptr, MAX_ALIGN);
+}
+
+void sve4_aligned_free(sve4_allocator_t* _Nullable allocator,
+                       void* _Nullable ptr, size_t alignment) {
+  if (!ptr)
+    return;
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  alloc->free(alloc, ptr, alignment);
 }
