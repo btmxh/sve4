@@ -152,7 +152,7 @@ jobs:
         cmake "--preset=ci-${OS%%-*}" \
           -D BUILD_SHARED_LIBS="${{ matrix.shared }}" \
           ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
-          -Wno-dev
+          -Wno-error=dev
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
