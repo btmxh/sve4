@@ -17,6 +17,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
     - name: Install LCov
       run: sudo apt-get update -q
@@ -48,6 +51,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
     - name: Configure
       run: cmake --preset=ci-sanitize
@@ -83,6 +89,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
     - name: Install static analyzers
       if: matrix.os == 'ubuntu-24.04'
@@ -133,6 +142,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+        fetch-depth: 0
 
     - uses: actions/setup-python@v5
       with: { python-version: "3.12" }
