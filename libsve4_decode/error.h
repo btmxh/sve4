@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef enum {
@@ -26,3 +27,7 @@ typedef struct {
   sve4_decode_error_src_t source;
   int32_t error_code;
 } sve4_decode_error_t;
+
+static inline bool sve4_decode_error_is_success(sve4_decode_error_t err) {
+  return !err.error_code;
+}
