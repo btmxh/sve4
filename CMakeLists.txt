@@ -10,7 +10,7 @@ project(
         CXX
 )
 
-find_package(WebP OPTIONAL)
+find_package(WebP QUIET)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")

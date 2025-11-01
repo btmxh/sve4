@@ -16,7 +16,7 @@ if(NOT IS_DIRECTORY "${mcss_SOURCE_DIR}")
     file(
         DOWNLOAD
             "https://github.com/mosra/m.css/archive/\
-            4a1324c22ebaf81d68e8745610b0127288358b8c.zip"
+4a1324c22ebaf81d68e8745610b0127288358b8c.zip"
             "${bin}/mcss.zip"
         STATUS status
         EXPECTED_MD5 e1b1d45b861b718299eeb91f8badfc6f
