@@ -9,10 +9,17 @@
 
 #include "defines.h"
 
+#ifdef _MSC_VER
+// https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30
+#define MAX_ALIGN alignof(double)
+#else
+#define MAX_ALIGN alignof(max_align_t)
+#endif
+
 static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
                         size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= alignof(max_align_t)))
+  if (sve4_likely(alignment <= MAX_ALIGN))
     return malloc(size);
   return aligned_alloc(alignment, size);
 }
@@ -20,7 +27,7 @@ static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
 static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
                          size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= alignof(max_align_t)))
+  if (sve4_likely(alignment <= MAX_ALIGN))
     return calloc(1, size);
   void* ptr = aligned_alloc(alignment, size);
   if (ptr)
@@ -31,7 +38,7 @@ static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
 static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
                        size_t old_size, size_t new_size, size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= alignof(max_align_t)))
+  if (sve4_likely(alignment <= MAX_ALIGN))
     return realloc(ptr, new_size);
   void* new_ptr = aligned_alloc(alignment, new_size);
   if (new_ptr) {
@@ -117,13 +124,13 @@ void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
 void* _Nullable sve4_malloc(sve4_allocator_t* _Nullable allocator,
                             size_t size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  return alloc->alloc(alloc, size, alignof(max_align_t));
+  return alloc->alloc(alloc, size, MAX_ALIGN);
 }
 
 void* _Nullable sve4_calloc(sve4_allocator_t* _Nullable allocator,
                             size_t size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  return alloc->calloc(alloc, size, alignof(max_align_t));
+  return alloc->calloc(alloc, size, MAX_ALIGN);
 }
 
 void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
@@ -136,8 +143,8 @@ void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
                              void* _Nullable ptr, size_t new_size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
   if (!ptr)
-    return alloc->alloc(alloc, new_size, alignof(max_align_t));
-  return alloc->grow(alloc, ptr, 0, new_size, alignof(max_align_t));
+    return alloc->alloc(alloc, new_size, MAX_ALIGN);
+  return alloc->grow(alloc, ptr, 0, new_size, MAX_ALIGN);
 }
 
 void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr) {
