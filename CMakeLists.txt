@@ -10,6 +10,17 @@ project(
         CXX
 )
 
+if(SVE4_DEVELOPER_MODE)
+    if(NOT PROJECT_IS_TOP_LEVEL)
+        message(
+            AUTHOR_WARNING
+            "Developer mode is intended for developers of sve4 only"
+        )
+    endif()
+
+    include(cmake/dev-mode.cmake)
+endif()
+
 find_package(WebP QUIET)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
@@ -80,14 +91,3 @@ endfunction()
 
 add_subdirectory(libsve4_utils)
 add_subdirectory(libsve4_decode)
-
-if(NOT SVE4_DEVELOPER_MODE)
-    return()
-elseif(NOT PROJECT_IS_TOP_LEVEL)
-    message(
-        AUTHOR_WARNING
-        "Developer mode is intended for developers of sve4 only"
-    )
-endif()
-
-include(cmake/dev-mode.cmake)
