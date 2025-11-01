@@ -31,6 +31,6 @@ endif()
 
 add_library(sve4::decode ALIAS sve4_decode)
 
-if(SVE4_BUILD_TESTS)
+if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

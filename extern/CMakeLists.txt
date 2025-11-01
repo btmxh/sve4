@@ -1,14 +1,16 @@
-add_library(
-    munit
-    munit/munit.c
-    munit/munit.h
-)
-target_include_directories(munit PUBLIC munit)
-set_target_properties(
-    munit
-    PROPERTIES
-        C_STANDARD
-            11
-        C_STANDARD_REQUIRED
-            YES
-)
+if(BUILD_TESTING)
+    add_library(
+        munit
+        munit/munit.c
+        munit/munit.h
+    )
+    target_include_directories(munit PUBLIC munit)
+    set_target_properties(
+        munit
+        PROPERTIES
+            C_STANDARD
+                11
+            C_STANDARD_REQUIRED
+                YES
+    )
+endif()
