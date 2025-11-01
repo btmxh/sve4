@@ -146,12 +146,11 @@ jobs:
         Add-Content "$env:GITHUB_ENV" 'EnforceProcessCountAcrossBuilds=true'
 
     - name: Configure
-      shell: pwsh
-      run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"
-        -D BUILD_SHARED_LIBS="${{ matrix.shared }}"
-        -D CMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        -D VCPKG_TARGET_TRIPLET="${{ matrix.vcpkg_triplet }}"
-        -D VCPKG_MANIFEST_MODE="OFF"
+      shell: bash
+      run: |
+        cmake "--preset=ci-${{ matrix.os%%-* }}" \
+          -D BUILD_SHARED_LIBS="${{ matrix.shared }}" \
+          ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
