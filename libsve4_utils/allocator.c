@@ -85,6 +85,14 @@ static void* alloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
   return self->grow(self, NULL, 0, size, alignment);
 }
 
+static void* calloc_based_on_alloc(sve4_allocator_t* _Nonnull self, size_t size,
+                                   size_t alignment) {
+  void* ptr = self->alloc(self, size, alignment);
+  if (ptr)
+    memset(ptr, 0, size);
+  return ptr;
+}
+
 static void* calloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
                                   size_t alignment) {
   void* ptr = self->grow(self, NULL, 0, size, alignment);
@@ -125,7 +133,7 @@ void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
         allocator->calloc ? allocator->calloc : alloc_based_on_grow;
   if (!allocator->calloc)
     allocator->calloc =
-        allocator->alloc ? allocator->alloc : calloc_based_on_grow;
+        allocator->alloc ? calloc_based_on_alloc : calloc_based_on_grow;
   if (!allocator->grow)
     allocator->grow =
         allocator->alloc ? grow_based_on_alloc : grow_based_on_calloc;
