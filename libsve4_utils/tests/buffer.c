@@ -8,7 +8,7 @@ typedef struct {
   bool* destroyed;
 } destructor_tracker;
 
-void destructor_tracker_destructor(char* data) {
+static void destructor_tracker_destructor(char* data) {
   destructor_tracker* tracker = (destructor_tracker*)data;
   if (tracker && tracker->destroyed)
     *tracker->destroyed = true;

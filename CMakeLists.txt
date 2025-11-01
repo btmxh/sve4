@@ -63,6 +63,7 @@ function(sve4_add_test)
             munit
     )
     add_test(NAME ${TEST_EXECUTABLE_NAME} COMMAND ${TEST_EXECUTABLE_NAME})
+    sve4_set_target_default_properties(TARGETS ${TEST_EXECUTABLE_NAME})
 endfunction()
 
 function(sve4_set_target_default_properties)

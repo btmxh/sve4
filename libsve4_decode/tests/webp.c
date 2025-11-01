@@ -15,7 +15,8 @@ enum { MS = (int64_t)1e6 };
 #define ms *MS
 
 static uint32_t rgba8(const uint8_t* ptr) {
-  return (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3] << 0);
+  return ((uint32_t)ptr[0] << 24) | ((uint32_t)ptr[1] << 16) |
+         ((uint32_t)ptr[2] << 8) | ((uint32_t)ptr[3] << 0);
 }
 
 static void read_binary_file(const char* path, void** data, size_t* size) {
@@ -33,8 +34,9 @@ static void read_binary_file(const char* path, void** data, size_t* size) {
 
 #define assert_success(err)                                                    \
   do {                                                                         \
-    munit_assert_int(err.source, ==, SVE4_DECODE_ERROR_SRC_DEFAULT);           \
-    munit_assert_int(err.error_code, ==, SVE4_DECODE_ERROR_DEFAULT_SUCCESS);   \
+    munit_assert_int((int)err.source, ==, SVE4_DECODE_ERROR_SRC_DEFAULT);      \
+    munit_assert_int((int)err.error_code, ==,                                  \
+                     SVE4_DECODE_ERROR_DEFAULT_SUCCESS);                       \
   } while (0);
 
 static MunitResult test_simple_webp_demux(const MunitParameter params[],
