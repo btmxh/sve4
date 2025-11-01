@@ -150,7 +150,7 @@ jobs:
       run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"
         -D BUILD_SHARED_LIBS="${{ matrix.shared }}"
         -D CMAKE_TOOLCHAIN_FILE="${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake"
-        -D VCPKG_TARGET_TRIPLET="${{ inputs.triplet }}"
+        -D VCPKG_TARGET_TRIPLET="${{ matrix.vcpkg_triplet }}"
         -D VCPKG_MANIFEST_MODE="OFF"
 
     - name: Setup PATH
