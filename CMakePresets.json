@@ -130,7 +130,7 @@
     },
     {
       "name": "ci-build",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build/ci",
       "hidden": true
     },
     {
