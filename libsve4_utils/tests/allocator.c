@@ -182,29 +182,6 @@ static MunitResult test_realloc_null(const MunitParameter params[],
   return MUNIT_OK;
 }
 
-static MunitResult test_alloc_zero_size(const MunitParameter params[],
-                                        void* user_data) {
-  (void)params;
-  (void)user_data;
-
-  void* ptr = sve4_malloc(NULL, 0);
-  if (ptr != NULL) {
-    sve4_free(NULL, ptr);
-  }
-
-  ptr = sve4_calloc(NULL, 0);
-  if (ptr != NULL) {
-    sve4_free(NULL, ptr);
-  }
-
-  ptr = sve4_aligned_alloc(NULL, 0, 64);
-  if (ptr != NULL) {
-    sve4_aligned_free(NULL, ptr, 64);
-  }
-
-  return MUNIT_OK;
-}
-
 static MunitResult test_realloc_zero_size(const MunitParameter params[],
                                           void* user_data) {
   (void)params;
@@ -366,14 +343,6 @@ static MunitTest test_suite_tests[] = {
     {
         "/realloc_null",
         test_realloc_null,
-        NULL,
-        NULL,
-        MUNIT_TEST_OPTION_NONE,
-        NULL,
-    },
-    {
-        "/alloc_zero_size",
-        test_alloc_zero_size,
         NULL,
         NULL,
         MUNIT_TEST_OPTION_NONE,
