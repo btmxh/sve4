@@ -149,7 +149,8 @@ jobs:
       shell: bash
       run: |
         OS=${{ matrix.os }}
-        cmake -Wno-error=dev "--preset=ci-${OS%%-*}" \
+        cmake -Wno-error=dev -D CMAKE_OSX_ARCHITECTURE=x64 \
+          "--preset=ci-${OS%%-*}" \
           -D BUILD_SHARED_LIBS="${{ matrix.shared }}" \
           ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
 
