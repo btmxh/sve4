@@ -115,7 +115,9 @@ jobs:
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
-      run: Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build"
+      run: |
+        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\libsve4_decode\Release"
+        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\libsve4_utils\Release"
 
     - name: Build
       run: cmake --build build --config Release -j 2
