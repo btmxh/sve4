@@ -8,9 +8,22 @@ if(BUILD_TESTING)
     set_target_properties(
         munit
         PROPERTIES
-            C_STANDARD
-                11
             C_STANDARD_REQUIRED
                 YES
     )
+    if(MSVC)
+        set_target_properties(
+            munit
+            PROPERTIES
+                C_STANDARD
+                    99
+        )
+    else()
+        set_target_properties(
+            munit
+            PROPERTIES
+                C_STANDARD
+                    11
+        )
+    endif()
 endif()
