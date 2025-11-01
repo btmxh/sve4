@@ -9,16 +9,16 @@
 
 #include "defines.h"
 
-void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
-                 size_t alignment) {
+static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
+                        size_t alignment) {
   (void)self;
   if (sve4_likely(alignment <= alignof(max_align_t)))
     return malloc(size);
   return aligned_alloc(alignment, size);
 }
 
-void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
-                  size_t alignment) {
+static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
+                         size_t alignment) {
   (void)self;
   if (sve4_likely(alignment <= alignof(max_align_t)))
     return calloc(1, size);
@@ -28,8 +28,8 @@ void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
   return ptr;
 }
 
-void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
-                size_t old_size, size_t new_size, size_t alignment) {
+static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                       size_t old_size, size_t new_size, size_t alignment) {
   (void)self;
   if (sve4_likely(alignment <= alignof(max_align_t)))
     return realloc(ptr, new_size);
@@ -43,7 +43,7 @@ void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
   return new_ptr;
 }
 
-void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
   (void)self;
   free(ptr);
 }
@@ -57,7 +57,10 @@ sve4_allocator_get_or_default(sve4_allocator_t* _Nullable allocator)
 
 static inline sve4_allocator_t* _Nonnull sve4_allocator_get_or_default(
     sve4_allocator_t* _Nullable allocator) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wcast-qual"
   return allocator ? allocator : (sve4_allocator_t*)&libc_allocator;
+#pragma clang diagnostic pop
 }
 
 static void* alloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
@@ -87,7 +90,7 @@ static void* calloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
     return new_ptr;                                                            \
   }
 
-void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+static void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
   (void)self;
   (void)ptr;
 }

@@ -13,6 +13,7 @@ const char* _Nonnull sve4_pixfmt_to_string(sve4_pixfmt_t pixfmt) {
     case SVE4_PIXFMT_DEFAULT_RGBA8:
       return "SVE4_RGBA8";
     }
+    break;
   case SVE4_FMT_SRC_FFMPEG:
     break;
   }
@@ -28,6 +29,7 @@ const char* _Nonnull sve4_samplefmt_to_string(sve4_samplefmt_t samplefmt) {
     case SVE4_SAMPLEFMT_DEFAULT_S16:
       return "SVE4_S16";
     }
+    break;
   case SVE4_FMT_SRC_FFMPEG:
     break;
   }
@@ -41,6 +43,7 @@ const char* _Nonnull sve4_genericfmt_to_string(sve4_genericfmt_t genericfmt) {
     case SVE4_GENERICFMT_DEFAULT_UNKNOWN:
       break;
     }
+    break;
   case SVE4_FMT_SRC_FFMPEG:
     break;
   }

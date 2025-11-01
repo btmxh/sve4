@@ -9,6 +9,7 @@ Checks: >
   readability-*,
   misc-*,
   -readability-braces-around-statements,
+  -clang-diagnostic-nullability-extension,
   -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
 
 # Warnings as errors
