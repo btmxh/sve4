@@ -1,6 +1,7 @@
 if(BUILD_TESTING)
     add_library(
         munit
+        STATIC
         munit/munit.c
         munit/munit.h
     )
