@@ -25,6 +25,12 @@ jobs:
       run: sudo apt-get update -q
         && sudo apt-get install lcov -q -y
 
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y -q \
+          libwebp-dev \
+          ffmpeg
+
     - name: Configure
       run: cmake --preset=ci-coverage
 
@@ -54,6 +60,12 @@ jobs:
       with:
         submodules: recursive
         fetch-depth: 0
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y -q \
+          libwebp-dev \
+          ffmpeg
 
     - name: Configure
       run: cmake --preset=ci-sanitize
@@ -85,6 +97,14 @@ jobs:
         - { type: shared, shared: YES }
         - { type: static, shared: NO }
 
+        config:
+        - os: ubuntu-24.04
+          vcpkg_triplet: x64-linux-release
+        - os: macos-14
+          vcpkg_triplet: x64-macos-release
+        - os: windows-2022
+          vcpkg_triplet: x64-windows-release
+
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -102,6 +122,17 @@ jobs:
         /usr/bin/clang-tidy clang-tidy
         /usr/bin/clang-tidy-18 180
 
+    - name: Install dependencies
+      uses: microsoft/vcpkg-action@v7
+      with:
+        pkgs:
+        - webp
+        - ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis]
+        triplet: ${{ matrix.config.vcpkg_triplet }}
+        cache-key: ${{ matrix.config.os }}
+        revision: master
+        token: ${{ github.token }}
+
     - name: Setup MultiToolTask
       if: matrix.os == 'windows-2022'
       run: |
@@ -112,6 +143,7 @@ jobs:
       shell: pwsh
       run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"
         -D BUILD_SHARED_LIBS=${{ matrix.shared }}
+        ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
