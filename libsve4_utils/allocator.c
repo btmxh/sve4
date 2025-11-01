@@ -12,6 +12,9 @@
 #ifdef _MSC_VER
 // https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30
 #define MAX_ALIGN alignof(double)
+
+// MSVC does not have aligned_alloc, but has _aligned_malloc/_aligned_free
+#include <malloc.h>
 #define aligned_alloc _aligned_malloc
 #else
 #define MAX_ALIGN alignof(max_align_t)
@@ -51,9 +54,18 @@ static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
   return new_ptr;
 }
 
-static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                      size_t alignment) {
   (void)self;
+#ifndef _MSC_VER
+  (void)alignment;
   free(ptr);
+#else
+  if (alignment > MAX_ALIGN)
+    _aligned_free(ptr);
+  else
+    free(ptr);
+#endif
 }
 
 static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
@@ -90,7 +102,7 @@ static void* calloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
       size_t copy_size = old_size < new_size ? old_size : new_size;            \
       if (ptr)                                                                 \
         memcpy(new_ptr, ptr, copy_size);                                       \
-      self->free(self, ptr);                                                   \
+      self->free(self, ptr, alignment);                                        \
     }                                                                          \
     return new_ptr;                                                            \
   }
@@ -149,5 +161,13 @@ void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr) {
   if (!ptr)
     return;
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  alloc->free(alloc, ptr);
+  alloc->free(alloc, ptr, MAX_ALIGN);
+}
+
+void sve4_aligned_free(sve4_allocator_t* _Nullable allocator,
+                       void* _Nullable ptr, size_t alignment) {
+  if (!ptr)
+    return;
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  alloc->free(alloc, ptr, alignment);
 }

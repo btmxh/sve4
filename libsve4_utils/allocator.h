@@ -16,7 +16,7 @@ typedef struct sve4_allocator_t {
                                     void* _Nullable ptr, size_t old_size,
                                     size_t new_size, size_t alignment);
   void (*_Nullable free)(struct sve4_allocator_t* _Nonnull self,
-                         void* _Nullable ptr);
+                         void* _Nullable ptr, size_t alignment);
 } sve4_allocator_t;
 
 void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator);
@@ -28,6 +28,8 @@ void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
 void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
                              void* _Nullable ptr, size_t new_size);
 void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr);
+void sve4_aligned_free(sve4_allocator_t* _Nullable allocator,
+                       void* _Nullable ptr, size_t alignment);
 
 static inline size_t sve4_align_up(size_t n, size_t alignment) {
   assert((alignment & (alignment - 1)) == 0 &&
