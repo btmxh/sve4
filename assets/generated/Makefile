@@ -60,4 +60,3 @@ clean:
 	rm -f $(ASSETS_DIR)/*.png $(ASSETS_DIR)/*.webp
 
 .PHONY: all clean
-
