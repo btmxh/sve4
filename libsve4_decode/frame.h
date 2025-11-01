@@ -20,4 +20,5 @@ typedef struct SVE4_DECODE_EXPORT {
   int64_t pts, duration;
 } sve4_decode_frame_t;
 
+SVE4_UTILS_EXPORT
 void sve4_decode_frame_free(sve4_decode_frame_t* _Nullable frame);
