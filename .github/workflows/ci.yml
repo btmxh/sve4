@@ -115,7 +115,7 @@ jobs:
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
-      run: Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\Release"
+      run: Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build"
 
     - name: Build
       run: cmake --build build --config Release -j 2
