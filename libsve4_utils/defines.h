@@ -12,3 +12,5 @@
 #define sve4_likely(x) (x)
 #define sve4_unlikely(x) (x)
 #endif
+
+#include "sve4_export.h"
