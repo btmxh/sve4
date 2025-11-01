@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "defines.h"
+
 typedef enum {
   SVE4_FMT_SRC_DEFAULT = 0,
   SVE4_FMT_SRC_FFMPEG,

@@ -57,10 +57,10 @@ sve4_allocator_get_or_default(sve4_allocator_t* _Nullable allocator)
 
 static inline sve4_allocator_t* _Nonnull sve4_allocator_get_or_default(
     sve4_allocator_t* _Nullable allocator) {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-qual"
   return allocator ? allocator : (sve4_allocator_t*)&libc_allocator;
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 }
 
 static void* alloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
@@ -99,9 +99,8 @@ GROW_BASED_ON_ALLOC_FUNC(alloc)
 GROW_BASED_ON_ALLOC_FUNC(calloc)
 
 void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
-  assert(allocator->alloc || allocator->calloc ||
-         allocator->grow &&
-             "At least one allocation function must be provided");
+  assert((allocator->alloc || allocator->calloc || allocator->grow) &&
+         "At least one allocation function must be provided");
   if (!allocator->alloc)
     allocator->alloc =
         allocator->calloc ? allocator->calloc : alloc_based_on_grow;

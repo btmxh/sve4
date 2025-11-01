@@ -89,11 +89,11 @@ static MunitResult test_simple_webp_anim(const MunitParameter params[],
   err = sve4_decode_libwebp_anim_decode(&anim, &frame);
   assert_success(err);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
   const uint8_t* frame_data = ram_frame->data[0];
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
   munit_assert_ptr_not_null(frame_data);
   uint32_t u32_frame_data[16];
@@ -176,11 +176,11 @@ static MunitResult test_anim_webp_anim(const MunitParameter params[],
   err = sve4_decode_libwebp_anim_alloc(&anim, NULL, &frame);
   assert_success(err);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
   const uint8_t* frame_data = ram_frame->data[0];
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
   munit_assert_true(sve4_decode_libwebp_anim_has_more(&anim));
   err = sve4_decode_libwebp_anim_decode(&anim, &frame);

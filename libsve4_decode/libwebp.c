@@ -98,10 +98,10 @@ sve4_decode_libwebp_anim_decode(sve4_decode_libwebp_anim_t* _Nonnull anim,
   if (frame) {
     assert(frame->buffer && frame->kind == SVE4_DECODE_FRAME_KIND_RAM_FRAME);
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
     sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame->buffer);
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
     // buf is in RGBA8
     memcpy(ram_frame->data[0], buf, ram_frame->linesizes[0] * anim->height);
