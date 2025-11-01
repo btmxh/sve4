@@ -120,6 +120,10 @@ jobs:
         /usr/bin/clang-tidy clang-tidy
         /usr/bin/clang-tidy-18 180
 
+    - name: Install vcpkg build dependencies
+      if: matrix.os == 'macos-14'
+      run: brew install nasm
+
     - name: Install dependencies
       uses: johnwason/vcpkg-action@v7
       with:
