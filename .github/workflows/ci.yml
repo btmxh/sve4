@@ -147,9 +147,11 @@ jobs:
 
     - name: Configure
       shell: pwsh
-      run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"
-        -D BUILD_SHARED_LIBS=${{ matrix.shared }}
-        "${{ steps.vcpkg.outputs.vcpkg-cmake-config }}"
+      run: |
+        $os = "${{ matrix.os }}".Split("-")[0]
+        cmake "--preset=ci-$os" `
+          -D BUILD_SHARED_LIBS=${{ matrix.shared }} `
+          ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
