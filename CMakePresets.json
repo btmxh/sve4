@@ -50,7 +50,7 @@
       "name": "flags-appleclang",
       "hidden": true,
       "cacheVariables": {
-        "SVE4_C_FLAGS": "-fstack-protector-strong -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wcast-qual -Wformat=2 -Wundef -Werror=float-equal -Wshadow -Wcast-align -Wunused -Wnull-dereference -Wdouble-promotion -Wimplicit-fallthrough -Wextra-semi -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-int"
+        "SVE4_C_FLAGS": "-fstack-protector-strong -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wcast-qual -Wformat=2 -Wundef -Werror=float-equal -Wshadow -Wcast-align -Wunused -Wnull-dereference -Wdouble-promotion -Wimplicit-fallthrough -Wextra-semi -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-int -Wno-nullability-extension"
       }
     },
     {
@@ -130,7 +130,7 @@
     },
     {
       "name": "ci-build",
-      "binaryDir": "${sourceDir}/build",
+      "binaryDir": "${sourceDir}/build/ci",
       "hidden": true
     },
     {

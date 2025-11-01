@@ -25,6 +25,12 @@ jobs:
       run: sudo apt-get update -q
         && sudo apt-get install lcov -q -y
 
+    - name: Install dependencies
+      run: |
+        sudo apt-get install -y -q \
+          libwebp-dev \
+          ffmpeg
+
     - name: Configure
       run: cmake --preset=ci-coverage
 
@@ -55,6 +61,13 @@ jobs:
         submodules: recursive
         fetch-depth: 0
 
+    - name: Install dependencies
+      run: |
+        sudo apt-get update -q &&
+        sudo apt-get install -y -q \
+          libwebp-dev \
+          ffmpeg
+
     - name: Configure
       run: cmake --preset=ci-sanitize
 
@@ -84,6 +97,12 @@ jobs:
         include:
         - { type: shared, shared: YES }
         - { type: static, shared: NO }
+        - os: ubuntu-24.04
+          vcpkg_triplet: x64-linux-release
+        - os: macos-14
+          vcpkg_triplet: arm64-osx-release
+        - os: windows-2022
+          vcpkg_triplet: x64-windows-release
 
     runs-on: ${{ matrix.os }}
 
@@ -102,6 +121,24 @@ jobs:
         /usr/bin/clang-tidy clang-tidy
         /usr/bin/clang-tidy-18 180
 
+    - name: Install vcpkg build dependencies (MacOS)
+      if: matrix.os == 'macos-14'
+      run: brew install nasm
+
+    - name: Install vcpkg build dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-24.04'
+      run: sudo apt-get install nasm
+
+    - name: Install dependencies
+      uses: johnwason/vcpkg-action@v7
+      id: vcpkg
+      with:
+        pkgs: libwebp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis]
+        triplet: ${{ matrix.vcpkg_triplet }}
+        cache-key: ${{ matrix.os }}
+        revision: master
+        token: ${{ github.token }}
+
     - name: Setup MultiToolTask
       if: matrix.os == 'windows-2022'
       run: |
@@ -109,24 +146,30 @@ jobs:
         Add-Content "$env:GITHUB_ENV" 'EnforceProcessCountAcrossBuilds=true'
 
     - name: Configure
-      shell: pwsh
-      run: cmake "--preset=ci-$("${{ matrix.os }}".split("-")[0])"
-        -D BUILD_SHARED_LIBS=${{ matrix.shared }}
+      shell: bash
+      run: |
+        OS=${{ matrix.os }}
+        cmake -Wno-error=dev \
+          "--preset=ci-${OS%%-*}" \
+          -D BUILD_SHARED_LIBS="${{ matrix.shared }}" \
+          -DCMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake \
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
+          -DVCPKG_MANIFEST_MODE=OFF
 
     - name: Setup PATH
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
       run: |
-        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\libsve4_decode\Release"
-        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\libsve4_utils\Release"
+        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_decode\Release"
+        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_utils\Release"
 
     - name: Build
-      run: cmake --build build --config Release -j 2
+      run: cmake --build build/ci --config Release -j 2
 
     - name: Install
-      run: cmake --install build --config Release --prefix prefix
+      run: cmake --install build/ci --config Release --prefix prefix
 
     - name: Test
-      working-directory: build
+      working-directory: build/ci
       run: ctest --output-on-failure --no-tests=error -C Release -j 2
 
   docs:
