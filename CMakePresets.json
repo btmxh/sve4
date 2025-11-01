@@ -58,7 +58,7 @@
       "description": "Note that all the flags after /W4 are required for MSVC to conform to the language standard",
       "hidden": true,
       "cacheVariables": {
-        "SVE4_C_FLAGS": "/sdl /guard:cf /utf-8 /diagnostics:caret /W4 /volatile:iso",
+        "SVE4_C_FLAGS": "/sdl /guard:cf /utf-8 /diagnostics:caret /W4 /volatile:iso /experimental:c11atomics",
         "CMAKE_EXE_LINKER_FLAGS": "/machine:x64 /guard:cf",
         "CMAKE_SHARED_LINKER_FLAGS": "/machine:x64 /guard:cf"
       }
