@@ -47,7 +47,7 @@ jobs:
   sanitize:
     runs-on: ubuntu-24.04
 
-    env: { CXX: clang++-18 }
+    env: { C: clang-18 }
 
     steps:
     - uses: actions/checkout@v4
