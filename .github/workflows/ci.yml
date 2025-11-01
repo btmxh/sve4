@@ -99,7 +99,7 @@ jobs:
         - os: ubuntu-24.04
           vcpkg_triplet: x64-linux-release
         - os: macos-14
-          vcpkg_triplet: x64-macos-release
+          vcpkg_triplet: x64-osx-release
         - os: windows-2022
           vcpkg_triplet: x64-windows-release
 
