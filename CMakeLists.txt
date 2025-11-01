@@ -10,7 +10,7 @@ project(
         CXX
 )
 
-find_package(WebP)
+find_package(WebP OPTIONAL)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
@@ -58,6 +58,7 @@ function(sve4_set_target_default_properties)
     set(multiValueArgs TARGETS)
     cmake_parse_arguments(PARSE_ARGV 0 ARG "" "" "${multiValueArgs}")
     foreach(target IN LISTS ARG_TARGETS)
+        set(clangTidyArgs "")
         if(SVE4_CLANG_TIDY)
             set(clangTidyArgs "clang-tidy;--use-color=1;--warnings-as-errors=*")
         endif()
