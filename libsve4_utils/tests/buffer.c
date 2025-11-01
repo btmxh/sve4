@@ -145,6 +145,6 @@ static const MunitSuite test_suite = {
     "/buffer", test_suite_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE,
 };
 
-int main(int argc, char* argv[MUNIT_ARRAY_PARAM(argc + 1)]) {
+int main(int argc, char* argv[]) {
   return munit_suite_main(&test_suite, NULL, argc, argv);
 }
