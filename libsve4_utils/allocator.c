@@ -58,14 +58,11 @@ static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
 static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
                                                 libc_grow, libc_free};
 
-static inline sve4_allocator_t*
-sve4_allocator_get_or_default(sve4_allocator_t* _Nullable allocator)
-    __attribute__((returns_nonnull));
-
 static inline sve4_allocator_t* _Nonnull sve4_allocator_get_or_default(
     sve4_allocator_t* _Nullable allocator) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-qual"
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   return allocator ? allocator : (sve4_allocator_t*)&libc_allocator;
 #pragma GCC diagnostic pop
 }
