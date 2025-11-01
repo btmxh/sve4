@@ -54,7 +54,7 @@ static MunitResult test_realloc(const MunitParameter params[],
   (void)user_data;
 
   size_t initial_size = 128;
-  void* ptr = sve4_realloc(NULL, NULL, initial_size);
+  void* ptr = sve4_realloc(NULL, NULL, 0, initial_size);
   munit_assert_ptr_not_null(ptr);
 
   for (size_t i = 0; i < initial_size; i++) {
@@ -62,7 +62,7 @@ static MunitResult test_realloc(const MunitParameter params[],
   }
 
   size_t new_size = 256;
-  void* new_ptr = sve4_realloc(NULL, ptr, new_size);
+  void* new_ptr = sve4_realloc(NULL, ptr, initial_size, new_size);
   munit_assert_ptr_not_null(new_ptr);
 
   for (size_t i = 0; i < initial_size; i++) {
@@ -100,7 +100,7 @@ static MunitResult test_custom_allocator_impl_missing(
   void* ptr = sve4_calloc(&allocator, size);
   munit_assert_ptr_not_null(ptr);
 
-  void* ptr2 = sve4_realloc(&allocator, ptr, size * 2);
+  void* ptr2 = sve4_realloc(&allocator, ptr, size, size * 2);
   munit_assert_ptr_not_null(ptr2);
 
   sve4_free(&allocator, ptr2);
@@ -129,7 +129,7 @@ static MunitResult test_custom_allocator_impl_missing_calloc(
   void* ptr = sve4_malloc(&allocator, size);
   munit_assert_ptr_not_null(ptr);
 
-  void* ptr2 = sve4_realloc(&allocator, ptr, size * 2);
+  void* ptr2 = sve4_realloc(&allocator, ptr, size, size * 2);
   munit_assert_ptr_not_null(ptr2);
 
   sve4_free(&allocator, ptr2);
@@ -175,7 +175,7 @@ static MunitResult test_realloc_null(const MunitParameter params[],
   (void)user_data;
 
   size_t size = 128;
-  void* ptr = sve4_realloc(NULL, NULL, size);
+  void* ptr = sve4_realloc(NULL, NULL, 0, size);
   munit_assert_ptr_not_null(ptr);
   sve4_free(NULL, ptr);
 
@@ -190,7 +190,7 @@ static MunitResult test_realloc_zero_size(const MunitParameter params[],
   void* ptr = sve4_malloc(NULL, 128);
   munit_assert_ptr_not_null(ptr);
 
-  void* new_ptr = sve4_realloc(NULL, ptr, 0);
+  void* new_ptr = sve4_realloc(NULL, ptr, 128, 0);
   if (new_ptr != NULL) {
     sve4_free(NULL, new_ptr);
   }
@@ -212,7 +212,7 @@ static MunitResult test_realloc_to_smaller_size(const MunitParameter params[],
   }
 
   size_t new_size = 128;
-  void* new_ptr = sve4_realloc(NULL, ptr, new_size);
+  void* new_ptr = sve4_realloc(NULL, ptr, initial_size, new_size);
   munit_assert_ptr_not_null(new_ptr);
 
   for (size_t i = 0; i < new_size; i++) {
@@ -249,7 +249,7 @@ static MunitResult test_realloc_same_size(const MunitParameter params[],
     ((uint8_t*)ptr)[i] = (uint8_t)i;
   }
 
-  void* new_ptr = sve4_realloc(NULL, ptr, size);
+  void* new_ptr = sve4_realloc(NULL, ptr, size, size);
   munit_assert_ptr_not_null(new_ptr);
 
   for (size_t i = 0; i < size; i++) {
@@ -272,10 +272,10 @@ static MunitResult test_custom_allocator_missing_grow(
   sve4_allocator_impl_missing(&allocator);
 
   size_t size = 64;
-  void* ptr = sve4_realloc(&allocator, NULL, size);
+  void* ptr = sve4_realloc(&allocator, NULL, 0, size);
   munit_assert_ptr_not_null(ptr);
 
-  void* new_ptr = sve4_realloc(&allocator, ptr, size * 2);
+  void* new_ptr = sve4_realloc(&allocator, ptr, size, size * 2);
   munit_assert_ptr_not_null(new_ptr);
 
   sve4_free(&allocator, new_ptr);
@@ -340,7 +340,7 @@ static MunitResult test_grow_based_on_calloc(const MunitParameter params[],
   void* ptr = sve4_malloc(&allocator, size);
   munit_assert_ptr_not_null(ptr);
 
-  void* new_ptr = sve4_realloc(&allocator, ptr, size * 2);
+  void* new_ptr = sve4_realloc(&allocator, ptr, size, size * 2);
   munit_assert_ptr_not_null(new_ptr);
 
   sve4_free(&allocator, new_ptr);
@@ -375,12 +375,61 @@ static MunitResult test_libc_grow_aligned(const MunitParameter params[],
   void* ptr = sve4_aligned_alloc(NULL, size, alignment);
   munit_assert_ptr_not_null(ptr);
 
-  void* new_ptr = sve4_realloc(NULL, ptr, size * 2);
+  void* new_ptr = sve4_aligned_realloc(NULL, ptr, size, size * 2, alignment);
   munit_assert_ptr_not_null(new_ptr);
   munit_assert_uint64(((uintptr_t)new_ptr) % alignment, ==, 0);
 
   sve4_aligned_free(NULL, new_ptr, alignment);
 
+  return MUNIT_OK;
+}
+
+static MunitResult test_aligned_calloc(const MunitParameter params[],
+                                       void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  size_t size = 1024;
+  size_t alignment = 64;
+  void* ptr = sve4_aligned_calloc(NULL, size, alignment);
+
+  munit_assert_ptr_not_null(ptr);
+  munit_assert_uint64(((uintptr_t)ptr) % alignment, ==, 0);
+
+  for (size_t i = 0; i < size; i++) {
+    munit_assert_uint8(((uint8_t*)ptr)[i], ==, 0);
+  }
+
+  sve4_aligned_free(NULL, ptr, alignment);
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_aligned_realloc(const MunitParameter params[],
+                                        void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  size_t initial_size = 128;
+  size_t alignment = 64;
+  void* ptr = sve4_aligned_realloc(NULL, NULL, 0, initial_size, alignment);
+  munit_assert_ptr_not_null(ptr);
+  munit_assert_uint64(((uintptr_t)ptr) % alignment, ==, 0);
+
+  for (size_t i = 0; i < initial_size; i++) {
+    ((uint8_t*)ptr)[i] = (uint8_t)i;
+  }
+
+  size_t new_size = 256;
+  void* new_ptr = sve4_aligned_realloc(NULL, ptr, initial_size, new_size, alignment);
+  munit_assert_ptr_not_null(new_ptr);
+  munit_assert_uint64(((uintptr_t)new_ptr) % alignment, ==, 0);
+
+  for (size_t i = 0; i < initial_size; i++) {
+    munit_assert_uint8(((uint8_t*)new_ptr)[i], ==, (uint8_t)i);
+  }
+
+  sve4_aligned_free(NULL, new_ptr, alignment);
   return MUNIT_OK;
 }
 
@@ -524,6 +573,22 @@ static MunitTest test_suite_tests[] = {
     {
         "/libc_grow_aligned",
         test_libc_grow_aligned,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/aligned_calloc",
+        test_aligned_calloc,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/aligned_realloc",
+        test_aligned_realloc,
         NULL,
         NULL,
         MUNIT_TEST_OPTION_NONE,

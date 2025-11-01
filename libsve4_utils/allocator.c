@@ -151,12 +151,28 @@ void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
   return alloc->alloc(alloc, size, alignment);
 }
 
+void* _Nullable sve4_aligned_calloc(sve4_allocator_t* _Nullable allocator,
+                                    size_t size, size_t alignment) {
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  return alloc->calloc(alloc, size, alignment);
+}
+
 void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
-                             void* _Nullable ptr, size_t new_size) {
+                             void* _Nullable ptr, size_t old_size,
+                             size_t new_size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
   if (!ptr)
     return alloc->alloc(alloc, new_size, MAX_ALIGN);
-  return alloc->grow(alloc, ptr, 0, new_size, MAX_ALIGN);
+  return alloc->grow(alloc, ptr, old_size, new_size, MAX_ALIGN);
+}
+
+void* _Nullable sve4_aligned_realloc(sve4_allocator_t* _Nullable allocator,
+                                     void* _Nullable ptr, size_t old_size,
+                                     size_t new_size, size_t alignment) {
+  sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
+  if (!ptr)
+    return alloc->alloc(alloc, new_size, alignment);
+  return alloc->grow(alloc, ptr, old_size, new_size, alignment);
 }
 
 void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr) {
