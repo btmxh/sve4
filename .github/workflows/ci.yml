@@ -161,10 +161,10 @@ jobs:
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\libsve4_utils\Release"
 
     - name: Build
-      run: cmake --build build --config Release -j 2
+      run: cmake --build build/ci --config Release -j 2
 
     - name: Install
-      run: cmake --install build --config Release --prefix prefix
+      run: cmake --install build/ci --config Release --prefix prefix
 
     - name: Test
       working-directory: build
