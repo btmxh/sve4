@@ -96,8 +96,6 @@ jobs:
         include:
         - { type: shared, shared: YES }
         - { type: static, shared: NO }
-
-        config:
         - os: ubuntu-24.04
           vcpkg_triplet: x64-linux-release
         - os: macos-14
@@ -126,8 +124,8 @@ jobs:
       uses: johnwason/vcpkg-action@v7
       with:
         pkgs: webp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis]
-        triplet: ${{ matrix.config.vcpkg_triplet }}
-        cache-key: ${{ matrix.config.os }}
+        triplet: ${{ matrix.vcpkg_triplet }}
+        cache-key: ${{ matrix.os }}
         revision: master
         token: ${{ github.token }}
 
