@@ -85,8 +85,9 @@ static void free_fn(sve4_allocator_t* self, void* ptr, size_t alignment) {
   free(ptr);
 }
 
-static MunitResult test_custom_allocator_impl_missing(
-    const MunitParameter params[], void* user_data) {
+static MunitResult
+test_custom_allocator_impl_missing(const MunitParameter params[],
+                                   void* user_data) {
   (void)params;
   (void)user_data;
 
@@ -114,8 +115,9 @@ static void* calloc_fn(sve4_allocator_t* self, size_t size, size_t alignment) {
   return calloc(1, size);
 }
 
-static MunitResult test_custom_allocator_impl_missing_calloc(
-    const MunitParameter params[], void* user_data) {
+static MunitResult
+test_custom_allocator_impl_missing_calloc(const MunitParameter params[],
+                                          void* user_data) {
   (void)params;
   (void)user_data;
 
@@ -145,8 +147,9 @@ static void* grow_fn(sve4_allocator_t* self, void* ptr, size_t old_size,
   return realloc(ptr, new_size);
 }
 
-static MunitResult test_custom_allocator_impl_missing_grow(
-    const MunitParameter params[], void* user_data) {
+static MunitResult
+test_custom_allocator_impl_missing_grow(const MunitParameter params[],
+                                        void* user_data) {
   (void)params;
   (void)user_data;
 
@@ -170,7 +173,7 @@ static MunitResult test_custom_allocator_impl_missing_grow(
 }
 
 static MunitResult test_realloc_null(const MunitParameter params[],
-                                   void* user_data) {
+                                     void* user_data) {
   (void)params;
   (void)user_data;
 
@@ -260,8 +263,9 @@ static MunitResult test_realloc_same_size(const MunitParameter params[],
   return MUNIT_OK;
 }
 
-static MunitResult test_custom_allocator_missing_grow(
-    const MunitParameter params[], void* user_data) {
+static MunitResult
+test_custom_allocator_missing_grow(const MunitParameter params[],
+                                   void* user_data) {
   (void)params;
   (void)user_data;
 
@@ -307,13 +311,20 @@ static MunitResult test_calloc_based_on_grow(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+static void* static_alloc_fn(sve4_allocator_t* self, size_t size,
+                             size_t alignment) {
+  (void)self;
+  (void)size;
+  return (void*)(uintptr_t)sve4_align_up(0xDEADBEEF, alignment);
+}
+
 static MunitResult test_default_free(const MunitParameter params[],
                                      void* user_data) {
   (void)params;
   (void)user_data;
 
   sve4_allocator_t allocator = {
-      .alloc = alloc_fn,
+      .alloc = static_alloc_fn,
   };
   sve4_allocator_impl_missing(&allocator);
 
@@ -421,7 +432,8 @@ static MunitResult test_aligned_realloc(const MunitParameter params[],
   }
 
   size_t new_size = 256;
-  void* new_ptr = sve4_aligned_realloc(NULL, ptr, initial_size, new_size, alignment);
+  void* new_ptr =
+      sve4_aligned_realloc(NULL, ptr, initial_size, new_size, alignment);
   munit_assert_ptr_not_null(new_ptr);
   munit_assert_uint64(((uintptr_t)new_ptr) % alignment, ==, 0);
 
