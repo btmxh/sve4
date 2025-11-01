@@ -39,21 +39,6 @@ static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
   return ptr;
 }
 
-static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
-                       size_t old_size, size_t new_size, size_t alignment) {
-  (void)self;
-  if (sve4_likely(alignment <= MAX_ALIGN))
-    return realloc(ptr, new_size);
-  void* new_ptr = aligned_alloc(alignment, new_size);
-  if (new_ptr) {
-    size_t copy_size = old_size < new_size ? old_size : new_size;
-    if (ptr)
-      memcpy(new_ptr, ptr, copy_size);
-    free(ptr);
-  }
-  return new_ptr;
-}
-
 static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
                       size_t alignment) {
   (void)self;
@@ -66,6 +51,21 @@ static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
   else
     free(ptr);
 #endif
+}
+
+static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                       size_t old_size, size_t new_size, size_t alignment) {
+  (void)self;
+  if (sve4_likely(alignment <= MAX_ALIGN))
+    return realloc(ptr, new_size);
+  void* new_ptr = aligned_alloc(alignment, new_size);
+  if (new_ptr) {
+    size_t copy_size = old_size < new_size ? old_size : new_size;
+    if (ptr)
+      memcpy(new_ptr, ptr, copy_size);
+    libc_free(self, ptr, alignment);
+  }
+  return new_ptr;
 }
 
 static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
