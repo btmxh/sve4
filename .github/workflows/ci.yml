@@ -125,6 +125,10 @@ jobs:
       if: matrix.os == 'macos-14'
       run: brew install nasm
 
+    - name: Install vcpkg build dependencies
+      if: matrix.os == 'ubuntu-24.04'
+      run: sudo apt-get install nasm
+
     - name: Install dependencies
       uses: johnwason/vcpkg-action@v7
       with:
