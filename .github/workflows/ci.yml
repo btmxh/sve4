@@ -131,6 +131,7 @@ jobs:
 
     - name: Install dependencies
       uses: johnwason/vcpkg-action@v7
+      id: vcpkg
       with:
         pkgs: libwebp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis]
         triplet: ${{ matrix.vcpkg_triplet }}
