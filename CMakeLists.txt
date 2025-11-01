@@ -98,18 +98,18 @@ function(sve4_generate_export_header TARGET)
     set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/")
     file(MAKE_DIRECTORY "${_gen_dir}")
 
+    string(TOUPPER ${TARGET} prefix)
+
     # Optional MSVC warning suppression (C4251)
     set(_pragma_suppress_c4251
         "/* Suppress C4251 only for MSVC */
 #if defined(_MSC_VER) && !defined(__ICL)
-#  define ${BASE_NAME}_SUPPRESS_C4251 _Pragma(\"warning(suppress:4251)\")
+#  define ${prefix}_SUPPRESS_C4251 _Pragma(\"warning(suppress:4251)\")
 #else
-#  define ${BASE_NAME}_SUPPRESS_C4251
+#  define ${prefix}_SUPPRESS_C4251
 #endif
 "
     )
-
-    string(TOUPPER ${TARGET} prefix)
 
     generate_export_header(
         ${TARGET}
