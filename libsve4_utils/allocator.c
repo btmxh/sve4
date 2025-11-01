@@ -107,9 +107,11 @@ static void* calloc_based_on_grow(sve4_allocator_t* _Nonnull self, size_t size,
     return new_ptr;                                                            \
   }
 
-static void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr) {
+static void default_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
+                         size_t alignment) {
   (void)self;
   (void)ptr;
+  (void)alignment;
 }
 
 GROW_BASED_ON_ALLOC_FUNC(alloc)
