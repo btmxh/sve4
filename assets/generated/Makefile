@@ -1,9 +1,9 @@
 # Directory where all assets will go
 ASSETS_DIR := .
-IMG2WEBP   ?= img2webp
-CWEBP      ?= cwebp
-CONVERT    ?= magick
-WEBPMUX    ?= webpmux
+IMG2WEBP ?= img2webp
+CWEBP ?= cwebp
+CONVERT ?= magick
+WEBPMUX ?= webpmux
 
 # Default target
 all: $(ASSETS_DIR)/4x4_anim.webp \
