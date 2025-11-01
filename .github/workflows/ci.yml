@@ -149,7 +149,7 @@ jobs:
       shell: pwsh
       run: |
         $os = "${{ matrix.os }}".Split("-")[0]
-        cmake "--preset=ci-$os" `
+        cmake --preset=ci-$os `
           -D BUILD_SHARED_LIBS=${{ matrix.shared }} `
           ${{ steps.vcpkg.outputs.vcpkg-cmake-config }}
 
