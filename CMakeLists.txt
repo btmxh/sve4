@@ -90,5 +90,36 @@ function(sve4_set_target_default_properties)
     endforeach()
 endfunction()
 
+include(GenerateExportHeader)
+function(sve4_generate_export_header TARGET)
+    include(GenerateExportHeader)
+
+    # Ensure the output directory exists
+    set(_gen_dir "${CMAKE_CURRENT_BINARY_DIR}/generated/")
+    file(MAKE_DIRECTORY "${_gen_dir}")
+
+    # Optional MSVC warning suppression (C4251)
+    set(_pragma_suppress_c4251
+        "/* Suppress C4251 only for MSVC */
+#if defined(_MSC_VER) && !defined(__ICL)
+#  define ${BASE_NAME}_SUPPRESS_C4251 _Pragma(\"warning(suppress:4251)\")
+#else
+#  define ${BASE_NAME}_SUPPRESS_C4251
+#endif
+"
+    )
+
+    string(TOUPPER ${TARGET} prefix)
+
+    generate_export_header(
+        ${TARGET}
+        BASE_NAME ${prefix}
+        EXPORT_FILE_NAME "${_gen_dir}/${TARGET}_export.h"
+        CUSTOM_CONTENT_FROM_VARIABLE _pragma_suppress_c4251
+    )
+
+    target_include_directories(${TARGET} PUBLIC "${_gen_dir}")
+endfunction()
+
 add_subdirectory(libsve4_utils)
 add_subdirectory(libsve4_decode)

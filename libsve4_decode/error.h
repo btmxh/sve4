@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "defines.h"
+#include "sve4_decode_export.h"
 
 typedef enum {
   SVE4_DECODE_ERROR_SRC_DEFAULT = 0,
@@ -25,7 +26,7 @@ typedef enum {
   err ? sve4_success                                                           \
       : ((sve4_decode_error_t){SVE4_DECODE_ERROR_SRC_DEFAULT, err})
 
-typedef struct SVE4_EXPORT {
+typedef struct SVE4_DECODE_EXPORT {
   sve4_decode_error_src_t source;
   int32_t error_code;
 } sve4_decode_error_t;

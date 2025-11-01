@@ -19,6 +19,7 @@ add_library(sve4_decode ${SVE4_DECODE_FILES})
 target_include_directories(sve4_decode PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(sve4_decode PUBLIC sve4_utils)
 sve4_set_target_default_properties(TARGETS sve4_decode)
+sve4_generate_export_header(sve4_decode)
 
 if(WebP_FOUND)
     target_link_libraries(
