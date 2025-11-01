@@ -10,7 +10,7 @@
 #include "munit.h"
 #include "ram_frame.h"
 
-#define ASSETS_DIR "../../../assets/"
+#define ASSETS_DIR "../../../../assets/"
 enum { MS = (int64_t)1e6 };
 #define ms *MS
 
@@ -69,7 +69,7 @@ static MunitResult test_simple_webp_anim(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
-  const char* path = "../../../assets/4x4.webp";
+  const char* path = ASSETS_DIR "4x4.webp";
   void* data = NULL;
   size_t size = 0;
   read_binary_file(path, &data, &size);
