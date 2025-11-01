@@ -182,6 +182,130 @@ static MunitResult test_realloc_null(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+static MunitResult test_alloc_zero_size(const MunitParameter params[],
+                                        void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  void* ptr = sve4_malloc(NULL, 0);
+  if (ptr != NULL) {
+    sve4_free(NULL, ptr);
+  }
+
+  ptr = sve4_calloc(NULL, 0);
+  if (ptr != NULL) {
+    sve4_free(NULL, ptr);
+  }
+
+  ptr = sve4_aligned_alloc(NULL, 0, 64);
+  if (ptr != NULL) {
+    sve4_aligned_free(NULL, ptr, 64);
+  }
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_realloc_zero_size(const MunitParameter params[],
+                                          void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  void* ptr = sve4_malloc(NULL, 128);
+  munit_assert_ptr_not_null(ptr);
+
+  void* new_ptr = sve4_realloc(NULL, ptr, 0);
+  if (new_ptr != NULL) {
+    sve4_free(NULL, new_ptr);
+  }
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_realloc_to_smaller_size(const MunitParameter params[],
+                                                void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  size_t initial_size = 256;
+  void* ptr = sve4_malloc(NULL, initial_size);
+  munit_assert_ptr_not_null(ptr);
+
+  for (size_t i = 0; i < initial_size; i++) {
+    ((uint8_t*)ptr)[i] = (uint8_t)i;
+  }
+
+  size_t new_size = 128;
+  void* new_ptr = sve4_realloc(NULL, ptr, new_size);
+  munit_assert_ptr_not_null(new_ptr);
+
+  for (size_t i = 0; i < new_size; i++) {
+    munit_assert_uint8(((uint8_t*)new_ptr)[i], ==, (uint8_t)i);
+  }
+
+  sve4_free(NULL, new_ptr);
+  return MUNIT_OK;
+}
+
+static MunitResult test_align_up(const MunitParameter params[],
+                                 void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  munit_assert_size(sve4_align_up(7, 8), ==, 8);
+  munit_assert_size(sve4_align_up(8, 8), ==, 8);
+  munit_assert_size(sve4_align_up(9, 8), ==, 16);
+  munit_assert_size(sve4_align_up(0, 8), ==, 0);
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_realloc_same_size(const MunitParameter params[],
+                                          void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  size_t size = 128;
+  void* ptr = sve4_malloc(NULL, size);
+  munit_assert_ptr_not_null(ptr);
+
+  for (size_t i = 0; i < size; i++) {
+    ((uint8_t*)ptr)[i] = (uint8_t)i;
+  }
+
+  void* new_ptr = sve4_realloc(NULL, ptr, size);
+  munit_assert_ptr_not_null(new_ptr);
+
+  for (size_t i = 0; i < size; i++) {
+    munit_assert_uint8(((uint8_t*)new_ptr)[i], ==, (uint8_t)i);
+  }
+
+  sve4_free(NULL, new_ptr);
+  return MUNIT_OK;
+}
+
+static MunitResult test_custom_allocator_missing_grow(
+    const MunitParameter params[], void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  sve4_allocator_t allocator = {
+      .alloc = alloc_fn,
+      .free = free_fn,
+  };
+  sve4_allocator_impl_missing(&allocator);
+
+  size_t size = 64;
+  void* ptr = sve4_realloc(&allocator, NULL, size);
+  munit_assert_ptr_not_null(ptr);
+
+  void* new_ptr = sve4_realloc(&allocator, ptr, size * 2);
+  munit_assert_ptr_not_null(new_ptr);
+
+  sve4_free(&allocator, new_ptr);
+
+  return MUNIT_OK;
+}
+
 static MunitTest test_suite_tests[] = {
     {
         "/simple_alloc",
@@ -242,6 +366,54 @@ static MunitTest test_suite_tests[] = {
     {
         "/realloc_null",
         test_realloc_null,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/alloc_zero_size",
+        test_alloc_zero_size,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/realloc_zero_size",
+        test_realloc_zero_size,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/realloc_to_smaller_size",
+        test_realloc_to_smaller_size,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/align_up",
+        test_align_up,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/realloc_same_size",
+        test_realloc_same_size,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/custom_allocator_missing_grow",
+        test_custom_allocator_missing_grow,
         NULL,
         NULL,
         MUNIT_TEST_OPTION_NONE,
