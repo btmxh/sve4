@@ -15,7 +15,7 @@
 
 // MSVC does not have aligned_alloc, but has _aligned_malloc/_aligned_free
 #include <malloc.h>
-#define aligned_alloc _aligned_malloc
+#define aligned_alloc(alignment, size) _aligned_malloc(size, alignment)
 #else
 #define MAX_ALIGN alignof(max_align_t)
 #endif
