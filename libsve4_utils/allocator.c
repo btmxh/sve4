@@ -58,6 +58,10 @@ static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
   (void)self;
   if (sve4_likely(alignment <= MAX_ALIGN))
     return realloc(ptr, new_size);
+#ifdef _MSC_VER
+  (void)old_size;
+  return _aligned_realloc(ptr, new_size, alignment);
+#else
   void* new_ptr = aligned_alloc(alignment, new_size);
   if (new_ptr) {
     size_t copy_size = old_size < new_size ? old_size : new_size;
@@ -66,6 +70,7 @@ static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
     libc_free(self, ptr, alignment);
   }
   return new_ptr;
+#endif
 }
 
 static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
