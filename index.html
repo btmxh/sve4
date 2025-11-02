@@ -51,6 +51,7 @@
         <h1>
           sve4
         </h1>
+<p><a name="md_README"></a> A Vulkan-hardware accelerated video editor.</p><section id="autotoc_md1"><h2><a href="#autotoc_md1">Building</a></h2><p>This project uses CMake and presets.</p><section id="autotoc_md2"><h3><a href="#autotoc_md2">Prerequisites</a></h3><ul><li>CMake (version 3.31+)</li><li>A C/C++ compiler (GCC, Clang, or MSVC)</li><li>Vulkan SDK</li><li>libwebp</li></ul></section><section id="autotoc_md3"><h3><a href="#autotoc_md3">Build Steps</a></h3><ol><li><p><strong>Configure CMake:</strong></p><p>Use the <code>dev</code> preset for local development.</p><p><code>bash cmake --preset dev</code></p></li><li><p><strong>Build:</strong></p><p><code>bash cmake --build build/dev</code></p></li></ol></section></section><section id="autotoc_md4"><h2><a href="#autotoc_md4">Testing</a></h2><p>To run the tests, use the <code>dev</code> test preset:</p><pre class="m-code">ctest<span class="w"> </span>--preset<span class="w"> </span>dev</pre></section><section id="autotoc_md5"><h2><a href="#autotoc_md5">Project Structure</a></h2><ul><li><code>libsve4_decode</code>: Library for decoding video frames. It seems to be using <code>libwebp</code>.</li><li><code>libsve4_utils</code>: Utility library with helper functions for memory allocation and other common tasks.</li><li><code>extern</code>: Contains external dependencies, like <code>munit</code>.</li></ul></section>
       </div>
     </div>
   </div>
@@ -95,7 +96,7 @@
   <div class="m-container">
     <div class="m-row">
       <div class="m-col-l-10 m-push-l-1">
-        <p>sve4. Created with <a href="https://mcss.mosra.cz/">m.css</a>.</p>
+        <p>sve4. Created with <a href="https://doxygen.org/">Doxygen</a> 1.9.8 and <a href="https://mcss.mosra.cz/">m.css</a>.</p>
       </div>
     </div>
   </div>
