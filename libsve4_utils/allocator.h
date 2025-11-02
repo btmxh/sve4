@@ -31,8 +31,16 @@ SVE4_UTILS_EXPORT
 void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
                                    size_t size, size_t alignment);
 SVE4_UTILS_EXPORT
+void* _Nullable sve4_aligned_calloc(sve4_allocator_t* _Nullable allocator,
+                                    size_t size, size_t alignment);
+SVE4_UTILS_EXPORT
 void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
-                             void* _Nullable ptr, size_t new_size);
+                             void* _Nullable ptr, size_t old_size,
+                             size_t new_size);
+SVE4_UTILS_EXPORT
+void* _Nullable sve4_aligned_realloc(sve4_allocator_t* _Nullable allocator,
+                                     void* _Nullable ptr, size_t old_size,
+                                     size_t new_size, size_t alignment);
 SVE4_UTILS_EXPORT
 void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr);
 SVE4_UTILS_EXPORT
