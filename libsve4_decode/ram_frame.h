@@ -22,4 +22,4 @@ sve4_decode_error_t
 sve4_decode_alloc_ram_frame(sve4_decode_frame_t* _Nonnull frame,
                             sve4_allocator_t* _Nullable allocator,
                             sve4_pixfmt_t fmt, size_t width, size_t height,
-                            size_t* _Nonnull plane_align);
+                            const size_t* _Nonnull plane_align);

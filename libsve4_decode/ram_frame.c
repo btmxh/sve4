@@ -14,7 +14,7 @@ sve4_decode_error_t sve4_decode_alloc_ram_frame(sve4_decode_frame_t* frame,
                                                 sve4_allocator_t* allocator,
                                                 sve4_pixfmt_t fmt, size_t width,
                                                 size_t height,
-                                                size_t* plane_align) {
+                                                const size_t* plane_align) {
   assert(width && height && plane_align);
 
   size_t num_planes = sve4_pixfmt_num_planes(fmt);
