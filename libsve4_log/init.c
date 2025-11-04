@@ -319,6 +319,7 @@ void sve4__flogv(sve4_log_id_t log_id, const char* file, size_t line,
       .fractional_timestamp = (int32_t)log_timestamp.tv_nsec,
       .file = file,
       .line = line,
+      .endl = true,
   };
   va_copy(record.args, args);
   log_to_file(&record, NULL, stderr, true, false);
