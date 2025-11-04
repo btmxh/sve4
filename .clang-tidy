@@ -19,7 +19,7 @@ Checks: >
 WarningsAsErrors: ''
 
 # Treat certain files differently (optional)
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: '^.*/libsve4/.*'
 
 # Extra options
 CheckOptions:

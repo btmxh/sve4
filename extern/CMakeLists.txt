@@ -28,3 +28,14 @@ if(BUILD_TESTING)
         )
     endif()
 endif()
+
+# add_subdirectory(tinycthread) error due to outdated CMake
+add_library(
+    tinycthread
+    tinycthread/source/tinycthread.c
+    tinycthread/source/tinycthread.h
+)
+
+find_package(Threads REQUIRED)
+target_include_directories(tinycthread PUBLIC tinycthread/source)
+target_link_libraries(tinycthread PUBLIC Threads::Threads)

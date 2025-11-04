@@ -15,7 +15,12 @@ sve4_set_target_default_properties(TARGETS sve4_log)
 sve4_generate_export_header(sve4_log)
 add_library(sve4::log ALIAS sve4_log)
 
-target_link_libraries(sve4_log PUBLIC sve4_utils)
+target_link_libraries(
+    sve4_log
+    PUBLIC
+        sve4_utils
+        tinycthread
+)
 
 if(BUILD_TESTING)
     add_subdirectory(tests)

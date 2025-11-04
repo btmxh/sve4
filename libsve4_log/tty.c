@@ -3,7 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <threads.h>
+// NOLINTNEXTLINE(misc-include-cleaner)
+#include <tinycthread.h>
 
 #include "defines.h"
 
@@ -49,6 +50,7 @@ static void isatty_init(void) {
 static inline bool sve4_isatty(FILE* _Nonnull file) {
   // NOLINTNEXTLINE(misc-include-cleaner)
   static once_flag once = ONCE_FLAG_INIT;
+  // NOLINTNEXTLINE(misc-include-cleaner)
   call_once(&once, isatty_init);
   int file_no = (int)sve4_fileno(file);
   return file_no > 0 && file_no < TTY_IDX_MAX && isatty_result[file_no];

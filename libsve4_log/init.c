@@ -6,8 +6,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <threads.h>
 #include <time.h>
+// NOLINTNEXTLINE(misc-include-cleaner)
+#include <tinycthread.h>
 
 #include "allocator.h"
 #include "ansi.h"
@@ -61,6 +62,7 @@ struct sve4_log_inner_t {
 };
 
 // NOLINTBEGIN(cppcoreguidelines-avoid-non-const-global-variables)
+// NOLINTNEXTLINE(misc-include-cleaner)
 static mtx_t log_mutex;
 static sve4_allocator_t* _Nullable log_allocator = NULL;
 static sve4_log_t _Nullable log_first = NULL, log_last = NULL;
@@ -69,7 +71,9 @@ static bool stderr_ansi_supported = false;
 
 sve4_log_error_t sve4_log_init(sve4_allocator_t* allocator) {
   log_allocator = allocator;
+  // NOLINTNEXTLINE(misc-include-cleaner)
   int err = mtx_init(&log_mutex, mtx_plain);
+  // NOLINTNEXTLINE(misc-include-cleaner)
   if (err != thrd_success) {
     sve4_flog(SVE4_LOG_ID_APPLICATION, SVE4_LOG_LEVEL_ERROR,
               "unable to initialize mutex: %d", err);
@@ -91,7 +95,9 @@ sve4_log_error_t sve4_log_add_config(sve4_log_config_t* _Nonnull config,
   log_handle->prev = log_last;
   log_handle->next = NULL;
 
+  // NOLINTNEXTLINE(misc-include-cleaner)
   int err = mtx_lock(&log_mutex);
+  // NOLINTNEXTLINE(misc-include-cleaner)
   if (err != thrd_success) {
     sve4_flog(SVE4_LOG_ID_DEFAULT_SVE4_LOG, SVE4_LOG_LEVEL_ERROR,
               "unable to lock mutex: %d", err);
@@ -102,6 +108,7 @@ sve4_log_error_t sve4_log_add_config(sve4_log_config_t* _Nonnull config,
   log_last ? (log_last->next = log_handle) : (log_first = log_handle);
   log_last = log_handle;
 
+  // NOLINTNEXTLINE(misc-include-cleaner)
   err = mtx_unlock(&log_mutex);
   if (err != thrd_success) {
     sve4_flog(SVE4_LOG_ID_DEFAULT_SVE4_LOG, SVE4_LOG_LEVEL_ERROR,
@@ -247,7 +254,9 @@ static void enable_stderr_ansi_escape_codes(void) {
 
 sve4_log_error_t sve4_log_to_stderr(sve4_log_callback_t* callback,
                                     bool force_ansi) {
+  // NOLINTNEXTLINE(misc-include-cleaner)
   static once_flag once;
+  // NOLINTNEXTLINE(misc-include-cleaner)
   call_once(&once, enable_stderr_ansi_escape_codes);
   return sve4_log_to_file(callback, stderr, false,
                           force_ansi || stderr_ansi_supported);
