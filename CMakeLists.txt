@@ -75,11 +75,17 @@ function(sve4_set_target_default_properties)
             set(clangTidyArgs "clang-tidy;--use-color=1;--warnings-as-errors=*")
         endif()
 
+        target_compile_definitions(
+            ${target}
+            PRIVATE
+                "-DSVE4_ROOT_DIR=\"${CMAKE_CURRENT_LIST_DIR}\""
+        )
+
         set_target_properties(
             ${target}
             PROPERTIES
                 C_STANDARD
-                    17
+                    23
                 C_STANDARD_REQUIRED
                     YES
                 C_CLANG_TIDY
@@ -122,4 +128,5 @@ function(sve4_generate_export_header TARGET)
 endfunction()
 
 add_subdirectory(libsve4_utils)
+add_subdirectory(libsve4_log)
 add_subdirectory(libsve4_decode)
