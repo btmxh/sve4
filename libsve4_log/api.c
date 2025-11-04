@@ -116,7 +116,7 @@ const char* sve4_log_shorten_path(char* buffer, size_t buf_size,
     }
   } while (path_ptr < path_end);
 
-  assert(n < buf_size);
+  assert(idx < buf_size);
   buffer[idx] = '\0';
   return buffer;
 }
