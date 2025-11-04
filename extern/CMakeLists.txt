@@ -32,6 +32,7 @@ endif()
 # add_subdirectory(tinycthread) error due to outdated CMake
 add_library(
     tinycthread
+    STATIC
     tinycthread/source/tinycthread.c
     tinycthread/source/tinycthread.h
 )
