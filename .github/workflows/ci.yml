@@ -160,6 +160,7 @@ jobs:
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
       run: |
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_decode\Release"
+        Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_log\Release"
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_utils\Release"
 
     - name: Build
