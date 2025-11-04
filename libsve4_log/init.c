@@ -1,5 +1,6 @@
 #include "init.h"
 
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <assert.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -16,6 +17,10 @@
 #include "buffer.h"
 #include "error.h"
 #include "tty.h"
+
+#ifdef _WIN32
+#define localtime_r(t, tm) localtime_s(tm, t)
+#endif
 
 sve4_log_callback_t sve4_log_callback_ref(sve4_log_callback_t src) {
   return (sve4_log_callback_t){
