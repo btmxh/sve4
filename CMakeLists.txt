@@ -85,7 +85,7 @@ function(sve4_set_target_default_properties)
             ${target}
             PROPERTIES
                 C_STANDARD
-                    23
+                    17
                 C_STANDARD_REQUIRED
                     YES
                 C_CLANG_TIDY
