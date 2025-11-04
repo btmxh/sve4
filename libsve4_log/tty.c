@@ -47,6 +47,7 @@ static void isatty_init(void) {
 }
 
 static inline bool sve4_isatty(FILE* _Nonnull file) {
+  // NOLINTNEXTLINE(misc-include-cleaner)
   static once_flag once = ONCE_FLAG_INIT;
   call_once(&once, isatty_init);
   int file_no = (int)sve4_fileno(file);
