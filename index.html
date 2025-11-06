@@ -51,7 +51,24 @@
         <h1>
           sve4
         </h1>
-<p><a name="md_README"></a> A Vulkan-hardware accelerated video editor.</p><section id="autotoc_md1"><h2><a href="#autotoc_md1">Building</a></h2><p>This project uses CMake and presets.</p><section id="autotoc_md2"><h3><a href="#autotoc_md2">Prerequisites</a></h3><ul><li>CMake (version 3.31+)</li><li>A C/C++ compiler (GCC, Clang, or MSVC)</li><li>Vulkan SDK</li><li>libwebp</li></ul></section><section id="autotoc_md3"><h3><a href="#autotoc_md3">Build Steps</a></h3><ol><li><p><strong>Configure CMake:</strong></p><p>Use the <code>dev</code> preset for local development.</p><p><code>bash cmake --preset dev</code></p></li><li><p><strong>Build:</strong></p><p><code>bash cmake --build build/dev</code></p></li></ol></section></section><section id="autotoc_md4"><h2><a href="#autotoc_md4">Testing</a></h2><p>To run the tests, use the <code>dev</code> test preset:</p><pre class="m-code">ctest<span class="w"> </span>--preset<span class="w"> </span>dev</pre></section><section id="autotoc_md5"><h2><a href="#autotoc_md5">Project Structure</a></h2><ul><li><code>libsve4_decode</code>: Library for decoding video frames. It seems to be using <code>libwebp</code>.</li><li><code>libsve4_utils</code>: Utility library with helper functions for memory allocation and other common tasks.</li><li><code>extern</code>: Contains external dependencies, like <code>munit</code>.</li></ul></section>
+<p><a name="md_README"></a> A Vulkan-hardware accelerated video editor.</p><section id="autotoc_md1"><h2><a href="#autotoc_md1">Building</a></h2><p>This project uses CMake and presets.</p><section id="autotoc_md2"><h3><a href="#autotoc_md2">Prerequisites</a></h3><ul><li>CMake (version 3.31+)</li><li>A C/C++ compiler (GCC, Clang, or MSVC)</li><li>Vulkan SDK</li><li>libwebp</li></ul></section><section id="autotoc_md3"><h3><a href="#autotoc_md3">Build Steps</a></h3><ol><li><p><strong>Configure CMake:</strong></p><p>Use the <code>dev</code> preset for local development.</p><p><code>bash cmake --preset dev</code></p></li><li><p><strong>Build:</strong></p><p><code>bash cmake --build build/dev</code></p></li></ol></section></section><section id="autotoc_md4"><h2><a href="#autotoc_md4">Testing</a></h2><p>To run the tests, use the <code>dev</code> test preset:</p><pre class="m-code">ctest<span class="w"> </span>--preset<span class="w"> </span>dev</pre></section><section id="autotoc_md5"><h2><a href="#autotoc_md5">Fuzzing</a></h2><p>Currently, there is a fuzz test for <code>sve4_log_shorten_path</code>. A preset <code>fuzz-common</code> is provided, one should override that in <code>CMakeUserPresets.json</code>.</p><p>My setting using AFL++ is the following</p><pre class="m-code">{
+  &quot;name&quot;: &quot;fuzz&quot;,
+  &quot;inherits&quot;: [
+    &quot;fuzz-common&quot;
+  ],
+  &quot;cacheVariables&quot;: {
+    &quot;CMAKE_BUILD_TYPE&quot;: &quot;Sanitize&quot;,
+    &quot;CMAKE_C_COMPILER&quot;: &quot;/usr/local/bin/afl-clang-fast&quot;,
+    &quot;CMAKE_CXX_COMPILER&quot;: &quot;/usr/local/bin/afl-clang-fast++&quot;,
+    // -fcf-protection=full break static libraries for some reason
+    &quot;SVE4_C_FLAGS&quot;: &quot;-fsanitize=fuzzer -fstack-protector-strong -fstack-clash-protection -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion -Wcast-qual -Wformat=2 -Wundef -Wshadow -Wunused -Wnull-dereference -Wdouble-promotion -Wimplicit-fallthrough -Wstrict-prototypes -Wmissing-prototypes -Wimplicit-int -Wno-nullability-extension&quot;,
+    &quot;CMAKE_AR&quot;: &quot;/usr/bin/llvm-ar&quot;,
+    &quot;CMAKE_LINKER&quot;: &quot;/usr/bin/llvm-ld&quot;,
+    &quot;CMAKE_NM&quot;: &quot;/usr/bin/llvm-nm&quot;,
+    &quot;CMAKE_OBJDUMP&quot;: &quot;/usr/bin/llvm-objdump&quot;,
+    &quot;CMAKE_RANLIB&quot;: &quot;/usr/bin/llvm-ranlib&quot;
+  }
+}</pre></section><section id="autotoc_md6"><h2><a href="#autotoc_md6">Project Structure</a></h2><ul><li><code>libsve4_decode</code>: Library for decoding video frames. It seems to be using <code>libwebp</code>.</li><li><code>libsve4_utils</code>: Utility library with helper functions for memory allocation and other common tasks.</li><li><code>extern</code>: Contains external dependencies, like <code>munit</code>.</li></ul></section>
       </div>
     </div>
   </div>
