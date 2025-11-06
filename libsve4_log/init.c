@@ -374,6 +374,15 @@ void sve4_glogv(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
 
 void sve4__flogv(sve4_log_id_t log_id, const char* file, size_t line,
                  sve4_log_level_t level, const char* fmt, va_list args) {
+  sve4_log_config_t config = {
+      .level = SVE4_LOG_LEVEL_DEBUG,
+      .path_shorten =
+          {
+              .max_length = SIZE_MAX,
+              .root_prefix = SVE4_ROOT_DIR,
+          },
+      .id_mapping = sve4_log_id_mapping_default(),
+  };
   struct timespec log_timestamp;
   timespec_get(&log_timestamp, TIME_UTC);
   struct tm timestamp = {0};
@@ -390,7 +399,7 @@ void sve4__flogv(sve4_log_id_t log_id, const char* file, size_t line,
       .endl = true,
   };
   va_copy(record.args, args);
-  log_to_file(&record, NULL, stderr, true, false);
+  log_to_file(&record, &config, stderr, true, false);
   va_end(args);
 }
 

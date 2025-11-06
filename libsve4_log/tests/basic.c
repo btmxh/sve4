@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "api.h"
 #include "error.h"
 #include "init.h"
 #include "munit.h"
@@ -75,6 +76,10 @@ static MunitResult test_external_log(const MunitParameter params[],
   (void)user_data;
   sve4_flog(SVE4_LOG_ID_DEFAULT_FFMPEG, SVE4_LOG_LEVEL_INFO,
             "This is an external log: %d", 456);
+  sve4_flog(SVE4_LOG_ID_DEFAULT_SVE4_LOG, SVE4_LOG_LEVEL_INFO,
+            "This is an sve4-log log: %d", 456);
+  sve4_flog(SVE4_LOG_ID_DEFAULT_SVE4_DECODE, SVE4_LOG_LEVEL_INFO,
+            "This is an sve4-decode log: %d", 456);
   sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, "\\usr\\include\\vulkan\\vulkan.hpp",
             621, true, SVE4_LOG_LEVEL_WARNING,
             "Vulkan validation layer warning: %s", "warning message");
