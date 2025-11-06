@@ -52,7 +52,7 @@ void sve4_shorten_path_config_free(
     sve4_log_shorten_path_config_t* _Nullable config);
 
 typedef struct {
-  const char* _Nullable (*_Nonnull get_log_id_name)(
+  const char* _Nonnull (*_Nonnull get_log_id_name)(
       sve4_log_id_t log_id, sve4_buffer_ref_t _Nullable user_data);
   sve4_buffer_ref_t _Nullable user_data;
 } sve4_log_id_mapping_t;

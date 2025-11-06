@@ -25,7 +25,7 @@ static const char* custom_get_log_id_name(sve4_log_id_t log_id,
     return "custom-vulkan";
   }
 
-  return NULL;
+  return "idk";
 }
 
 static void custom_callback(sve4_log_record_t* record,
@@ -66,6 +66,7 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
 
   {
     FILE* file = tmpfile();
+    munit_assert_not_null(file);
     sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
     sve4_log_to_file(&conf_ref.callback, file, true, false);
     sve4_log_add_config(&conf_ref, NULL);
@@ -121,6 +122,9 @@ static MunitResult test_external_log(const MunitParameter params[],
   (void)user_data;
   sve4_flog(SVE4_LOG_ID_DEFAULT_FFMPEG, SVE4_LOG_LEVEL_INFO,
             "This is an external log: %d", 456);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  sve4_flog(42, SVE4_LOG_LEVEL_INFO, "This is an external log from 42: %d",
+            727);
   sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, "/usr/include/vulkan/vulkan.hpp", 621,
             true, SVE4_LOG_LEVEL_WARNING, "Vulkan validation layer warning: %s",
             "warning message");

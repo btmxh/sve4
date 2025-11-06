@@ -80,6 +80,9 @@ static MunitResult test_external_log(const MunitParameter params[],
             "This is an sve4-log log: %d", 456);
   sve4_flog(SVE4_LOG_ID_DEFAULT_SVE4_DECODE, SVE4_LOG_LEVEL_INFO,
             "This is an sve4-decode log: %d", 456);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  sve4_flog(42, SVE4_LOG_LEVEL_INFO, "This is an external log from 42: %d",
+            727);
   sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, "\\usr\\include\\vulkan\\vulkan.hpp",
             621, true, SVE4_LOG_LEVEL_WARNING,
             "Vulkan validation layer warning: %s", "warning message");

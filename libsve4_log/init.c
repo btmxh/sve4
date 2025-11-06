@@ -62,7 +62,7 @@ sve4_log_id_mapping_t sve4_log_id_mapping_ref(sve4_log_id_mapping_t src) {
   };
 }
 
-static const char* _Nullable get_log_id_name_default(
+static const char* _Nonnull get_log_id_name_default(
     sve4_log_id_t log_id, sve4_buffer_ref_t _Nullable user_data) {
   (void)user_data;
   switch (log_id) {
@@ -78,7 +78,7 @@ static const char* _Nullable get_log_id_name_default(
     return "VULKAN ";
   }
 
-  return NULL;
+  return "???";
 }
 
 sve4_log_id_mapping_t sve4_log_id_mapping_default(void) {
