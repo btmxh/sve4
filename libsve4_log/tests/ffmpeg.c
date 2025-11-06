@@ -10,18 +10,12 @@
 #include "init.h"
 #include "munit.h"
 
+#include "tests/counter.h"
+
 #define assert_success(err)                                                    \
   munit_assert_int((int)err, ==, SVE4_LOG_ERROR_SUCCESS)
 
 static atomic_int log_init_refcount = 0;
-static atomic_int num_logs = 0;
-
-static void log_callback_inc_counter(sve4_log_record_t* record,
-                                     const sve4_log_config_t* config) {
-  (void)record;
-  (void)config;
-  atomic_fetch_add(&num_logs, 1);
-}
 
 static void* setup_log(const MunitParameter params[], void* user_data) {
   (void)params;
@@ -40,21 +34,8 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
               .root_prefix = SVE4_ROOT_DIR,
           },
   };
-
-  {
-    sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
-    sve4_log_to_stderr(&conf_ref.callback, true);
-    sve4_log_add_config(&conf_ref, NULL);
-  }
-
-  {
-    sve4_log_config_t conf_ref = conf;
-    conf_ref.callback = (sve4_log_callback_t){
-        .callback = log_callback_inc_counter,
-        .user_data = NULL,
-    };
-    sve4_log_add_config(&conf_ref, NULL);
-  }
+  sve4_log_to_stderr(&conf.callback, true);
+  sve4_log_add_config(&conf, NULL);
   return NULL;
 }
 
@@ -71,12 +52,16 @@ static MunitResult test_basic_log(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
-  atomic_store(&num_logs, 0);
+  sve4_log_t log;
+  atomic_int num_logs = 0;
+  sve4_log_add_config((sve4_log_config_t[]){counter_log_config(&num_logs)},
+                      &log);
   av_log(NULL, AV_LOG_ERROR, "Hello, %s\n", "World!!");
   av_log(NULL, AV_LOG_ERROR, "Hello, %s\n", "World!!");
   av_log(NULL, AV_LOG_ERROR, "Hello, %s\n", "World!!");
   av_log(NULL, AV_LOG_ERROR, "Hello, %s\n", "World!!");
   munit_assert_int(atomic_load(&num_logs), ==, 4);
+  assert_success(sve4_log_remove_log(log));
   return MUNIT_OK;
 }
 
@@ -85,17 +70,21 @@ static MunitResult test_ignored_log(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
-  atomic_store(&num_logs, 0);
+  sve4_log_t log;
+  atomic_int num_logs = 0;
+  sve4_log_add_config((sve4_log_config_t[]){counter_log_config(&num_logs)},
+                      &log);
   av_log(NULL, AV_LOG_TRACE, "Hello, %s\n", "World!!");
   av_log(NULL, AV_LOG_TRACE, "Hello, %s\n", "World!!");
   av_log(NULL, AV_LOG_TRACE, "Hello, %s\n", "World!!");
   av_log(NULL, AV_LOG_TRACE, "Hello, %s\n", "World!!");
   munit_assert_int(atomic_load(&num_logs), ==, 4);
+  assert_success(sve4_log_remove_log(log));
   return MUNIT_OK;
 }
 
 static const MunitSuite test_suite = {
-    "/basic",
+    "/ffmpeg",
     (MunitTest[]){
         {
             "/basic_log",
