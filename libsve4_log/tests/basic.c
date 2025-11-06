@@ -1,10 +1,7 @@
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
 
-#include "allocator.h"
 #include "error.h"
 #include "init.h"
 #include "munit.h"
