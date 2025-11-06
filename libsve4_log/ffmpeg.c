@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <threads.h>
+#include <tinycthread.h>
 
 #include "allocator.h"
 #include "api.h"
