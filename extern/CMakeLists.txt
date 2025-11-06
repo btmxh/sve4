@@ -27,6 +27,13 @@ if(BUILD_TESTING)
                     11
         )
     endif()
+    set_property(
+        TARGET
+            munit
+        PROPERTY
+            POSITION_INDEPENDENT_CODE
+                True
+    )
 endif()
 
 # add_subdirectory(tinycthread) error due to outdated CMake
