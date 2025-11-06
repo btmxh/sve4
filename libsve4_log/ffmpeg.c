@@ -54,11 +54,12 @@ void sve4_log_ffmpeg_callback(void* avcl, int level, const char* fmt,
   // Our approach uses an AVFifo object for every thread
   thread_local static AVFifo* msg = NULL;
   // along with a temporary buffer managed in an arena
-  thread_local static sve4_allocator_t arena = sve4_allocator_arena_init;
+  thread_local static sve4_allocator_t arena;
 
   // lazily initialize the AVFifo
   if (!msg) {
     msg = av_fifo_alloc2(0, sizeof(char), AV_FIFO_FLAG_AUTO_GROW);
+    arena = sve4_allocator_arena_init;
   }
 
   va_list args2;
