@@ -21,6 +21,15 @@ if(FFmpeg_FOUND)
     )
 endif()
 
+if(Vulkan_FOUND)
+    list(
+        APPEND
+        SVE4_LOG_FILES
+        vulkan.h
+        vulkan.c
+    )
+endif()
+
 add_library(sve4_log ${SVE4_LOG_FILES})
 
 target_include_directories(sve4_log PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
@@ -39,8 +48,13 @@ if(FFmpeg_FOUND)
     target_link_libraries(sve4_log PUBLIC FFmpeg::AVUTIL)
 endif()
 
-if(VULKAN_FOUND)
-    target_link_libraries(sve4_log PUBLIC Vulkan::Vulkan)
+if(Vulkan_FOUND)
+    target_link_libraries(
+        sve4_log
+        PUBLIC
+            Vulkan::Headers
+            Vulkan::volk
+    )
     target_compile_definitions(sve4_log PUBLIC "SVE4_HAS_VULKAN")
 endif()
 

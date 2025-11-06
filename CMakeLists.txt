@@ -25,6 +25,13 @@ endif()
 
 find_package(WebP QUIET)
 find_package(FFmpeg QUIET)
+find_package(
+    Vulkan
+    COMPONENTS
+        Headers
+        volk
+    QUIET
+)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
