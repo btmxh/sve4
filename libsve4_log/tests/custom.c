@@ -9,10 +9,6 @@
 #define assert_success(err)                                                    \
   munit_assert_int((int)err, ==, SVE4_LOG_ERROR_SUCCESS)
 
-static void buffer_free(char* data) {
-  sve4_free(NULL, data);
-}
-
 static const char* custom_get_log_id_name(sve4_log_id_t log_id,
                                           sve4_buffer_ref_t user_data) {
   (void)user_data;
@@ -52,7 +48,7 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
       .level = SVE4_LOG_LEVEL_DEFAULT,
       .id_mapping =
           {
-              .user_data = sve4_buffer_create(NULL, 42, buffer_free),
+              .user_data = sve4_buffer_create(NULL, 42, NULL),
               .get_log_id_name = custom_get_log_id_name,
           },
       .path_shorten =
@@ -77,7 +73,7 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
   {
     sve4_log_config_t conf_ref = conf;
     conf_ref.callback = (sve4_log_callback_t){
-        .user_data = sve4_buffer_create(NULL, 14, buffer_free),
+        .user_data = sve4_buffer_create(NULL, 14, NULL),
         .callback = custom_callback,
     };
     sve4_log_add_config(&conf_ref, NULL);
