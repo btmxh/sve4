@@ -60,6 +60,7 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
 
   {
     sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
+    conf_ref.level = SVE4_LOG_LEVEL_WARNING;
     sve4_log_to_stderr(&conf_ref.callback, true);
     sve4_log_add_config(&conf_ref, NULL);
   }
@@ -68,6 +69,7 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
     FILE* file = tmpfile();
     munit_assert_not_null(file);
     sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
+    conf_ref.level = SVE4_LOG_LEVEL_INFO;
     sve4_log_to_file(&conf_ref.callback, file, true, false);
     sve4_log_add_config(&conf_ref, NULL);
   }
