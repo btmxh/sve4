@@ -52,12 +52,14 @@ void sve4_shorten_path_config_free(
     sve4_log_shorten_path_config_t* _Nullable config);
 
 typedef struct {
-  const char* _Nonnull (*_Nonnull get_log_id_name)(
+  const char* _Nullable (*_Nonnull get_log_id_name)(
       sve4_log_id_t log_id, sve4_buffer_ref_t _Nullable user_data);
   sve4_buffer_ref_t _Nullable user_data;
 } sve4_log_id_mapping_t;
 SVE4_LOG_EXPORT
 sve4_log_id_mapping_t sve4_log_id_mapping_ref(sve4_log_id_mapping_t src);
+SVE4_LOG_EXPORT
+sve4_log_id_mapping_t sve4_log_id_mapping_default(void);
 SVE4_LOG_EXPORT
 void sve4_log_id_mapping_free(sve4_log_id_mapping_t* _Nullable mapping);
 
@@ -88,3 +90,7 @@ sve4_log_error_t sve4_log_to_file(sve4_log_callback_t* _Nonnull callback,
 SVE4_LOG_EXPORT
 sve4_log_error_t sve4_log_to_stderr(sve4_log_callback_t* _Nonnull callback,
                                     bool force_ansi);
+#ifdef SVE4_HAS_MUNIT
+SVE4_LOG_EXPORT
+sve4_log_error_t sve4_log_to_munit(sve4_log_callback_t* _Nonnull callback);
+#endif

@@ -47,7 +47,7 @@ void sve4__panic(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
 #define sve4_flog(log_id, ...)                                                 \
   sve4__flog(log_id, __FILE__, __LINE__, __VA_ARGS__)
 #define sve4_panic(...)                                                        \
-  sve4__panic(__FILE__, __LINE__, sve4_log_id_application, __VA_ARGS__)
+  sve4__panic(SVE4_LOG_ID_MAIN, __FILE__, __LINE__, __VA_ARGS__)
 
 // generic logging API
 SVE4_LOG_EXPORT
@@ -60,7 +60,7 @@ void sve4_glogv(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
                 va_list args) sve4_gnu_attribute((__format__(printf, 6, 0)));
 
 #define sve4_log(...)                                                          \
-  sve4_glog(SVE4_LOG_ID_MAIN, __FILE__, __LINE__, false, __VA_ARGS__)
+  sve4_glog(SVE4_LOG_ID_MAIN, __FILE__, __LINE__, true, __VA_ARGS__)
 #define sve4_log_debug(...) sve4_log(SVE4_LOG_LEVEL_DEBUG, __VA_ARGS__)
 #define sve4_log_info(...) sve4_log(SVE4_LOG_LEVEL_INFO, __VA_ARGS__)
 #define sve4_log_warn(...) sve4_log(SVE4_LOG_LEVEL_WARNING, __VA_ARGS__)

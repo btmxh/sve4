@@ -23,5 +23,11 @@ target_link_libraries(
 )
 
 if(BUILD_TESTING)
+    target_link_libraries(sve4_log PRIVATE munit)
+    target_compile_definitions(sve4_log PUBLIC "SVE4_HAS_MUNIT")
     add_subdirectory(tests)
+endif()
+
+if(SVE4_ENABLE_FUZZING)
+    add_subdirectory(fuzz)
 endif()

@@ -167,6 +167,18 @@
         "dev-mode",
         "ci-multi-config"
       ]
+    },
+    {
+      "name": "fuzz-common",
+      "binaryDir": "${sourceDir}/build/fuzz",
+      "inherits": [
+        "ci-linux",
+        "ci-sanitize",
+        "dev-mode"
+      ],
+      "cacheVariables": {
+        "SVE4_ENABLE_FUZZING": "ON"
+      }
     }
   ]
 }

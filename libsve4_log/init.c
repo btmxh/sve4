@@ -1,5 +1,7 @@
 #include "init.h"
 
+#include <stdlib.h>
+
 #define __STDC_WANT_LIB_EXT1__ 1
 #include <assert.h>
 #include <stdarg.h>
@@ -20,6 +22,10 @@
 
 #ifdef _WIN32
 #define localtime_r(t, tm) localtime_s(tm, t)
+#endif
+
+#ifdef SVE4_HAS_MUNIT
+#include <munit.h>
 #endif
 
 sve4_log_callback_t sve4_log_callback_ref(sve4_log_callback_t src) {
@@ -56,6 +62,32 @@ sve4_log_id_mapping_t sve4_log_id_mapping_ref(sve4_log_id_mapping_t src) {
   };
 }
 
+static const char* _Nullable get_log_id_name_default(
+    sve4_log_id_t log_id, sve4_buffer_ref_t _Nullable user_data) {
+  (void)user_data;
+  switch (log_id) {
+  case SVE4_LOG_ID_APPLICATION:
+    return "application";
+  case SVE4_LOG_ID_DEFAULT_SVE4_DECODE:
+    return "sve4-decode";
+  case SVE4_LOG_ID_DEFAULT_SVE4_LOG:
+    return "sve4-log";
+  case SVE4_LOG_ID_DEFAULT_FFMPEG:
+    return "ffmpeg";
+  case SVE4_LOG_ID_DEFAULT_VULKAN:
+    return "vulkan";
+  }
+
+  return NULL;
+}
+
+sve4_log_id_mapping_t sve4_log_id_mapping_default(void) {
+  return (sve4_log_id_mapping_t){
+      .user_data = NULL,
+      .get_log_id_name = get_log_id_name_default,
+  };
+}
+
 void sve4_log_id_mapping_free(sve4_log_id_mapping_t* _Nullable mapping) {
   if (mapping)
     sve4_buffer_free(&mapping->user_data);
@@ -86,6 +118,16 @@ sve4_log_error_t sve4_log_init(sve4_allocator_t* allocator) {
   }
 
   return SVE4_LOG_ERROR_SUCCESS;
+}
+
+void sve4_log_destroy(void) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
+  while (log_first)
+    sve4_log_remove_log(log_first);
+#pragma GCC diagnostic pop
+  // NOLINTNEXTLINE(misc-include-cleaner)
+  mtx_destroy(&log_mutex);
 }
 
 sve4_log_error_t sve4_log_add_config(sve4_log_config_t* _Nonnull config,
@@ -134,8 +176,14 @@ sve4_log_error_t sve4_log_remove_log(sve4_log_t _Nonnull log) {
     return SVE4_LOG_ERROR_THREADS;
   }
 
+  sve4_log_callback_free(&log->config.callback);
+  sve4_shorten_path_config_free(&log->config.path_shorten);
+  sve4_log_id_mapping_free(&log->config.id_mapping);
+
   log->prev ? (log->prev->next = log->next) : (log_first = log->next);
   log->next ? (log->next->prev = log->prev) : (log_last = log->prev);
+
+  sve4_free(log_allocator, log);
 
   err = mtx_unlock(&log_mutex);
   if (err != thrd_success) {
@@ -174,7 +222,7 @@ static void log_to_file(sve4_log_record_t* _Nonnull record,
       [SVE4_LOG_LEVEL_ERROR] = SVE4_LOG_ANSI_FG_BRIGHT_RED,
   };
 #define TIMESTAMP_BUF_MAX_SIZE 16
-  char timestamp_buf[TIMESTAMP_BUF_MAX_SIZE];
+  char timestamp_buf[TIMESTAMP_BUF_MAX_SIZE] = {0};
   strftime(timestamp_buf, sizeof(timestamp_buf), "%H:%M:%S", record->timestamp);
 
   const char* ansi_timestamp = "";
@@ -197,11 +245,10 @@ static void log_to_file(sve4_log_record_t* _Nonnull record,
   if (flog)
     flog_text = "[flog] ";
 
-  char file[SVE4_LOG_SHORTEN_PATH_MAX_LENGTH + 1];
-  sve4_log_shorten_path(file, sizeof(file), record->file,
-                        config ? config->path_shorten.root_prefix
-                               : SVE4_ROOT_DIR);
-
+  char file_buf[SVE4_LOG_SHORTEN_PATH_MAX_LENGTH + 1] = {0};
+  const char* file = sve4_log_shorten_path(
+      file_buf, config ? config->path_shorten.max_length + 1 : 0, record->file,
+      config ? config->path_shorten.root_prefix : SVE4_ROOT_DIR);
   fprintf(out, "%s%s %s%-5s %s%s%s:%zu:%s %s%s", ansi_timestamp, timestamp_buf,
           ansi_level,
           record->level >= 0 && record->level < SVE4_LOG_LEVEL_MAX
@@ -330,3 +377,44 @@ void sve4__flogv(sve4_log_id_t log_id, const char* file, size_t line,
   log_to_file(&record, NULL, stderr, true, false);
   va_end(args);
 }
+
+#ifdef SVE4_HAS_MUNIT
+static void log_munit_callback(sve4_log_record_t* _Nonnull record,
+                               const sve4_log_config_t* _Nullable conf) {
+  (void)conf;
+  static const MunitLogLevel sve4_to_munit_log_level[] = {
+      [SVE4_LOG_LEVEL_DEBUG] = MUNIT_LOG_DEBUG,
+      [SVE4_LOG_LEVEL_INFO] = MUNIT_LOG_INFO,
+      [SVE4_LOG_LEVEL_WARNING] = MUNIT_LOG_WARNING,
+      [SVE4_LOG_LEVEL_ERROR] = MUNIT_LOG_ERROR,
+  };
+
+  va_list args_copy;
+  va_copy(args_copy, record->args);
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+  int len = vsnprintf(NULL, 0, record->msg, args_copy);
+#pragma GCC diagnostic pop
+  va_end(args_copy);
+
+  if (len < 0) {
+    sve4_panic("vsnprintf failed, returning %d", len);
+  }
+
+  char* buf = sve4_calloc(log_allocator, (size_t)len + 1);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+  vsnprintf(buf, (size_t)len + 1, record->msg, record->args);
+#pragma GCC diagnostic pop
+  munit_logf_ex(sve4_to_munit_log_level[record->level], record->file,
+                (int)record->line, "%s", buf);
+  sve4_free(log_allocator, buf);
+}
+
+sve4_log_error_t sve4_log_to_munit(sve4_log_callback_t* _Nonnull callback) {
+  callback->callback = log_munit_callback;
+  callback->user_data = NULL;
+  return SVE4_LOG_ERROR_SUCCESS;
+}
+#endif

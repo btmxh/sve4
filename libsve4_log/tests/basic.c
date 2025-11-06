@@ -9,30 +9,88 @@
 #include "init.h"
 #include "munit.h"
 
-#define ASSETS_DIR "../../../../assets/"
-enum { MS = (int64_t)1e6 };
-#define ms *MS
-
 #define assert_success(err)                                                    \
-  do {                                                                         \
-    munit_assert_int((int)err.source, ==, SVE4_DECODE_ERROR_SRC_DEFAULT);      \
-    munit_assert_int((int)err.error_code, ==,                                  \
-                     SVE4_DECODE_ERROR_DEFAULT_SUCCESS);                       \
-  } while (0);
+  munit_assert_int((int)err, ==, SVE4_LOG_ERROR_SUCCESS)
 
-static MunitResult test_init(const MunitParameter params[], void* user_data) {
+static sve4_log_config_t default_config(void) {
+  return (sve4_log_config_t){
+      .level = SVE4_LOG_LEVEL_DEFAULT,
+      .id_mapping = sve4_log_id_mapping_default(),
+      .path_shorten =
+          {
+              .max_length = 10,
+              .root_prefix = SVE4_ROOT_DIR,
+          },
+  };
+}
+
+static void* setup_log(const MunitParameter params[], void* user_data) {
   (void)params;
   (void)user_data;
-  munit_assert_int((int)sve4_log_init(NULL), ==, (int)SVE4_LOG_ERROR_SUCCESS);
+  static atomic_bool initialized = false;
+  if (atomic_load(&initialized))
+    return NULL;
+
+  assert_success(sve4_log_init(NULL));
+
+  sve4_log_config_t conf = default_config();
+  // NOTE: current conf does not allocate anything
+  sve4_log_to_stderr(&conf.callback, true);
+  sve4_log_add_config(&conf, NULL);
+
+  conf = default_config();
+  sve4_log_to_munit(&conf.callback);
+
+  sve4_log_add_config(&conf, NULL);
+  atomic_store(&initialized, true);
+  return NULL;
+}
+
+static void teardown_log(void* user_data) {
+  (void)user_data;
+  sve4_log_destroy(); // intentionally omitted
+}
+
+static MunitResult test_log(const MunitParameter params[], void* user_data) {
+  (void)params;
+  (void)user_data;
+  int a = 621;
+  double b = 14;
+  long long c = 42;
+  const char* msg = "%s %d";
+  sve4_log_debug("Hi, a = %d, b = %lf", a, b);
+  sve4_log_info("c = %lld, msg = \"%s\"", c, msg);
+  sve4_log_warn("Hello, World!");
+  munit_log(MUNIT_LOG_INFO, "Hi");
+  // munit panic on error
+  // sve4_log_error("Error!");
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_freestanding_log(const MunitParameter params[],
+                                         void* user_data) {
+  (void)params;
+  (void)user_data;
+  sve4_flog(SVE4_LOG_ID_APPLICATION, SVE4_LOG_LEVEL_INFO,
+            "This is a freestanding log: %d", 123);
   return MUNIT_OK;
 }
 
 static const MunitSuite test_suite = {
-    "/webp",
+    "/log",
     (MunitTest[]){
         {
             "/init",
-            test_init,
+            test_log,
+            setup_log,
+            teardown_log,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "/freestanding",
+            test_freestanding_log,
             NULL,
             NULL,
             MUNIT_TEST_OPTION_NONE,

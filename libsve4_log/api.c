@@ -48,14 +48,17 @@ const char* sve4_log_shorten_path(char* buffer, size_t buf_size,
   const char sep = '/';
 #endif
 
-  assert(buffer && path && buf_size);
+  assert(buffer && path);
 
-  if (trim_root_prefix &&
+  if (trim_root_prefix && strlen(path) >= strlen(trim_root_prefix) &&
       memcmp(path, trim_root_prefix, strlen(trim_root_prefix)) == 0) {
     path += strlen(trim_root_prefix);
     if (*path == sep)
       ++path;
   }
+
+  if (buf_size == 0)
+    return path;
 
   // count number of `pathsep` in path, along with the strlen of path
   size_t pathlen = strlen(path);
@@ -105,7 +108,7 @@ const char* sve4_log_shorten_path(char* buffer, size_t buf_size,
       overbound -= num_trim_chars;
 
       // copy the path element to the buffer
-      for (size_t i = 0; i < elem_size && idx < buf_size; ++i) {
+      for (size_t i = 0; i < elem_size && idx + 1 < buf_size; ++i) {
         buffer[idx++] = path_ptr[i];
       }
     }
