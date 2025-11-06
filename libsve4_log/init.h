@@ -71,6 +71,8 @@ struct sve4_log_config_t {
 };
 
 SVE4_LOG_EXPORT
+sve4_log_config_t sve4_log_config_ref(const sve4_log_config_t* src);
+SVE4_LOG_EXPORT
 sve4_log_error_t sve4_log_init(sve4_allocator_t* _Nullable allocator);
 SVE4_LOG_EXPORT
 void sve4_log_destroy(void);

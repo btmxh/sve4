@@ -9,16 +9,33 @@
 #define assert_success(err)                                                    \
   munit_assert_int((int)err, ==, SVE4_LOG_ERROR_SUCCESS)
 
-static sve4_log_config_t default_config(void) {
-  return (sve4_log_config_t){
-      .level = SVE4_LOG_LEVEL_DEFAULT,
-      .id_mapping = sve4_log_id_mapping_default(),
-      .path_shorten =
-          {
-              .max_length = 10,
-              .root_prefix = SVE4_ROOT_DIR,
-          },
-  };
+static void buffer_free(char* data) {
+  sve4_free(NULL, data);
+}
+
+static const char* custom_get_log_id_name(sve4_log_id_t log_id,
+                                          sve4_buffer_ref_t user_data) {
+  (void)user_data;
+  switch (log_id) {
+  case SVE4_LOG_ID_APPLICATION:
+    return "custom-application";
+  case SVE4_LOG_ID_DEFAULT_SVE4_DECODE:
+    return "custom-sve4-decode";
+  case SVE4_LOG_ID_DEFAULT_SVE4_LOG:
+    return "custom-sve4-log";
+  case SVE4_LOG_ID_DEFAULT_FFMPEG:
+    return "custom-ffmpeg";
+  case SVE4_LOG_ID_DEFAULT_VULKAN:
+    return "custom-vulkan";
+  }
+
+  return NULL;
+}
+
+static void custom_callback(sve4_log_record_t* record,
+                            const sve4_log_config_t* conf) {
+  (void)conf;
+  (void)record;
 }
 
 static void* setup_log(const MunitParameter params[], void* user_data) {
@@ -30,15 +47,40 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
 
   assert_success(sve4_log_init(NULL));
 
-  sve4_log_config_t conf = default_config();
-  // NOTE: current conf does not allocate anything
-  sve4_log_to_stderr(&conf.callback, true);
-  sve4_log_add_config(&conf, NULL);
+  sve4_log_config_t conf = {
+      .level = SVE4_LOG_LEVEL_DEFAULT,
+      .id_mapping =
+          {
+              .user_data = sve4_buffer_create(NULL, 42, buffer_free),
+              .get_log_id_name = custom_get_log_id_name,
+          },
+      .path_shorten =
+          {
+              .max_length = 10,
+              .root_prefix = SVE4_ROOT_DIR,
+          },
+  };
 
-  conf = default_config();
-  sve4_log_to_munit(&conf.callback);
+  {
+    sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
+    sve4_log_to_stderr(&conf_ref.callback, true);
+    sve4_log_add_config(&conf_ref, NULL);
+  }
 
-  sve4_log_add_config(&conf, NULL);
+  {
+    sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
+    sve4_log_to_munit(&conf_ref.callback);
+    sve4_log_add_config(&conf_ref, NULL);
+  }
+
+  {
+    sve4_log_config_t conf_ref = conf;
+    conf_ref.callback = (sve4_log_callback_t){
+        .user_data = sve4_buffer_create(NULL, 14, buffer_free),
+        .callback = custom_callback,
+    };
+    sve4_log_add_config(&conf_ref, NULL);
+  }
   atomic_store(&initialized, true);
   return NULL;
 }
@@ -48,6 +90,7 @@ static void teardown_log(void* user_data) {
   sve4_log_destroy(); // intentionally omitted
 }
 
+// pretty much same as basic.c
 static MunitResult test_app_log(const MunitParameter params[],
                                 void* user_data) {
   (void)params;
@@ -88,7 +131,7 @@ static MunitResult test_freestanding_log(const MunitParameter params[],
 }
 
 static const MunitSuite test_suite = {
-    "/basic",
+    "/custom",
     (MunitTest[]){
         {
             "/init",

@@ -106,6 +106,15 @@ static sve4_log_t _Nullable log_first = NULL, log_last = NULL;
 static bool stderr_ansi_supported = false;
 // NOLINTEND(cppcoreguidelines-avoid-non-const-global-variables)
 
+sve4_log_config_t sve4_log_config_ref(const sve4_log_config_t* src) {
+  return (sve4_log_config_t){
+      .level = src->level,
+      .callback = sve4_log_callback_ref(src->callback),
+      .id_mapping = sve4_log_id_mapping_ref(src->id_mapping),
+      .path_shorten = sve4_log_shorten_path_config_ref(src->path_shorten),
+  };
+}
+
 sve4_log_error_t sve4_log_init(sve4_allocator_t* allocator) {
   log_allocator = allocator;
   // NOLINTNEXTLINE(misc-include-cleaner)
