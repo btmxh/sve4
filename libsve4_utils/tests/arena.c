@@ -62,6 +62,33 @@ static MunitResult test_alloc_many(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+static MunitResult test_realloc(const MunitParameter params[],
+                                void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  sve4_allocator_t alloc = sve4_allocator_arena_init;
+
+  size_t initial_size = 128;
+  void* ptr = sve4_realloc(&alloc, NULL, 0, initial_size);
+  munit_assert_ptr_not_null(ptr);
+
+  for (size_t i = 0; i < initial_size; i++) {
+    ((uint8_t*)ptr)[i] = (uint8_t)i;
+  }
+
+  size_t new_size = 256;
+  void* new_ptr = sve4_realloc(&alloc, ptr, initial_size, new_size);
+  munit_assert_ptr_not_null(new_ptr);
+
+  for (size_t i = 0; i < initial_size; i++) {
+    munit_assert_uint8(((uint8_t*)new_ptr)[i], ==, (uint8_t)i);
+  }
+
+  sve4_allocator_arena_destroy(&alloc);
+  return MUNIT_OK;
+}
+
 static MunitResult test_free_random_memory(const MunitParameter params[],
                                            void* user_data) {
   (void)params;
@@ -108,6 +135,14 @@ static MunitTest test_suite_tests[] = {
     {
         "/reset",
         test_reset,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/realloc",
+        test_realloc,
         NULL,
         NULL,
         MUNIT_TEST_OPTION_NONE,
