@@ -38,11 +38,12 @@ static void custom_callback(sve4_log_record_t* record,
   (void)record;
 }
 
+static atomic_int log_init_refcount = 0;
+
 static void* setup_log(const MunitParameter params[], void* user_data) {
   (void)params;
   (void)user_data;
-  static atomic_bool initialized = false;
-  if (atomic_load(&initialized))
+  if (atomic_fetch_add(&log_init_refcount, 1) > 0)
     return NULL;
 
   assert_success(sve4_log_init(NULL));
@@ -81,11 +82,13 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
     };
     sve4_log_add_config(&conf_ref, NULL);
   }
-  atomic_store(&initialized, true);
   return NULL;
 }
 
 static void teardown_log(void* user_data) {
+  if (atomic_fetch_sub(&log_init_refcount, 1) > 1)
+    return;
+
   (void)user_data;
   sve4_log_destroy(); // intentionally omitted
 }

@@ -21,11 +21,12 @@ static sve4_log_config_t default_config(void) {
   };
 }
 
+static atomic_int log_init_refcount = 0;
+
 static void* setup_log(const MunitParameter params[], void* user_data) {
   (void)params;
   (void)user_data;
-  static atomic_bool initialized = false;
-  if (atomic_load(&initialized))
+  if (atomic_fetch_add(&log_init_refcount, 1) > 0)
     return NULL;
 
   assert_success(sve4_log_init(NULL));
@@ -39,11 +40,13 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
   sve4_log_to_munit(&conf.callback);
 
   sve4_log_add_config(&conf, NULL);
-  atomic_store(&initialized, true);
   return NULL;
 }
 
 static void teardown_log(void* user_data) {
+  if (atomic_fetch_sub(&log_init_refcount, 1) > 1)
+    return;
+
   (void)user_data;
   sve4_log_destroy(); // intentionally omitted
 }
@@ -72,9 +75,9 @@ static MunitResult test_external_log(const MunitParameter params[],
   (void)user_data;
   sve4_flog(SVE4_LOG_ID_DEFAULT_FFMPEG, SVE4_LOG_LEVEL_INFO,
             "This is an external log: %d", 456);
-  sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, "/usr/include/vulkan/vulkan.hpp", 621,
-            true, SVE4_LOG_LEVEL_WARNING, "Vulkan validation layer warning: %s",
-            "warning message");
+  sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, "\\usr\\include\\vulkan\\vulkan.hpp",
+            621, true, SVE4_LOG_LEVEL_WARNING,
+            "Vulkan validation layer warning: %s", "warning message");
   return MUNIT_OK;
 }
 
@@ -109,8 +112,8 @@ static const MunitSuite test_suite = {
         {
             "/external",
             test_external_log,
-            NULL,
-            NULL,
+            setup_log,
+            teardown_log,
             MUNIT_TEST_OPTION_NONE,
             NULL,
         },
