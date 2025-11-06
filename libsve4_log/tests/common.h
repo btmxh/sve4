@@ -14,6 +14,18 @@ static MunitResult test_app_log(const MunitParameter params[],
   sve4_log_debug("Hi, a = %d, b = %lf", a, b);
   sve4_log_info("c = %lld, msg = \"%s\"", c, msg);
   sve4_log_warn("Hello, World!");
+
+  sve4_glog(SVE4_LOG_ID_DEFAULT_FFMPEG, __FILE__, __LINE__, true,
+            SVE4_LOG_LEVEL_INFO, "This is an FFmpeg log: %d", 456);
+  sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, __FILE__, __LINE__, true,
+            SVE4_LOG_LEVEL_INFO, "This is an Vulkan log: %d", 456);
+  sve4_glog(SVE4_LOG_ID_DEFAULT_SVE4_LOG, __FILE__, __LINE__, true,
+            SVE4_LOG_LEVEL_INFO, "This is an sve4-log log: %d", 456);
+  sve4_glog(SVE4_LOG_ID_DEFAULT_SVE4_DECODE, __FILE__, __LINE__, true,
+            SVE4_LOG_LEVEL_INFO, "This is an sve4-decode log: %d", 456);
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
+  sve4_glog(14, __FILE__, __LINE__, true, SVE4_LOG_LEVEL_INFO,
+            "This is an 14 (peak) log: %d", 456);
   munit_log(MUNIT_LOG_INFO, "Hi");
   // munit panic on error
   // sve4_log_error("Error!");
