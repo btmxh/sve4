@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "defines.h"
+
 void sve4__flog(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
                 sve4_log_level_t level, const char* _Nonnull fmt, ...) {
   va_list args;

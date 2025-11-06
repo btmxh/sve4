@@ -18,3 +18,6 @@
 #define sve4_gnu_attribute(...)
 #define sve4_noreturn_dummy(...) return __VA_ARGS
 #endif
+
+#define sve4_min(a, b) ((a) < (b) ? (a) : (b))
+#define sve4_max(a, b) ((a) > (b) ? (a) : (b))
