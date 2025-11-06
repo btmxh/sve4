@@ -1,13 +1,31 @@
 #pragma once
 
 #include <assert.h>
+#include <stdalign.h>
 #include <stddef.h>
 
 #include "defines.h"
 #include "sve4_utils_export.h"
 
+#ifdef _MSC_VER
+// https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30
+#define SVE4_MAX_ALIGN alignof(double)
+
+// MSVC does not have aligned_alloc, but has _aligned_malloc/_aligned_free
+#include <malloc.h>
+#define aligned_alloc(alignment, size) _aligned_malloc(size, alignment)
+#else
+#define SVE4_MAX_ALIGN alignof(max_align_t)
+#endif
+
+// current implementation of arena stores two pointers as its state
+// this
+typedef struct {
+  void* _Nullable p1, * _Nullable p2;
+} sve4_allocator_state_t;
+
 typedef struct sve4_allocator_t {
-  void* _Nullable ctx;
+  sve4_allocator_state_t state;
 
   void* _Nullable (*_Nullable alloc)(struct sve4_allocator_t* _Nonnull self,
                                      size_t size, size_t alignment);
