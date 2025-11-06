@@ -223,7 +223,6 @@ foreach(_component ${FFmpeg_FIND_COMPONENTS})
             ${${_component}_LIBRARIES}
     )
     add_library(FFmpeg::${_component} ALIAS "FFmpeg_${_component}")
-    message("${${_component}_LIBRARIES}")
 
     target_link_libraries(FFmpeg_FFmpeg INTERFACE FFmpeg::${_component})
 endforeach()
