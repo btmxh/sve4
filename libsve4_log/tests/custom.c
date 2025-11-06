@@ -65,6 +65,13 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
   }
 
   {
+    FILE* file = tmpfile();
+    sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
+    sve4_log_to_file(&conf_ref.callback, file, true, false);
+    sve4_log_add_config(&conf_ref, NULL);
+  }
+
+  {
     sve4_log_config_t conf_ref = sve4_log_config_ref(&conf);
     sve4_log_to_munit(&conf_ref.callback);
     sve4_log_add_config(&conf_ref, NULL);
