@@ -361,13 +361,14 @@ void sve4__flogv(sve4_log_id_t log_id, const char* file, size_t line,
                  sve4_log_level_t level, const char* fmt, va_list args) {
   struct timespec log_timestamp;
   timespec_get(&log_timestamp, TIME_UTC);
-  struct tm* timestamp =
-      localtime_r(&(time_t){log_timestamp.tv_sec}, &(struct tm){0});
+  struct tm timestamp = {0};
+  localtime_r(&(time_t){log_timestamp.tv_sec}, &timestamp);
+
   sve4_log_record_t record = {
       .id = log_id,
       .level = level,
       .msg = fmt,
-      .timestamp = timestamp,
+      .timestamp = &timestamp,
       .fractional_timestamp = (int32_t)log_timestamp.tv_nsec,
       .file = file,
       .line = line,
