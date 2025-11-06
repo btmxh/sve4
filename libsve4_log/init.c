@@ -67,15 +67,15 @@ static const char* _Nullable get_log_id_name_default(
   (void)user_data;
   switch (log_id) {
   case SVE4_LOG_ID_APPLICATION:
-    return "application";
+    return "  APP  ";
   case SVE4_LOG_ID_DEFAULT_SVE4_DECODE:
-    return "sve4-decode";
+    return "SVE4DEC";
   case SVE4_LOG_ID_DEFAULT_SVE4_LOG:
-    return "sve4-log";
+    return "SVE4LOG";
   case SVE4_LOG_ID_DEFAULT_FFMPEG:
-    return "ffmpeg";
+    return "FFMPEG ";
   case SVE4_LOG_ID_DEFAULT_VULKAN:
-    return "vulkan";
+    return "VULKAN ";
   }
 
   return NULL;
@@ -238,6 +238,7 @@ static void log_to_file(sve4_log_record_t* _Nonnull record,
   const char* ansi_level = "";
   const char* ansi_location = "";
   const char* ansi_flog = "";
+  const char* ansi_id = "";
   const char* ansi_reset = "";
   const char* flog_text = "";
 
@@ -249,6 +250,7 @@ static void log_to_file(sve4_log_record_t* _Nonnull record,
     ansi_location = SVE4_LOG_ANSI_FG_BRIGHT_BLACK;
     ansi_flog = SVE4_LOG_ANSI_FG_BRIGHT_BLACK;
     ansi_reset = SVE4_LOG_ANSI_RESET;
+    ansi_id = SVE4_LOG_ANSI_FG_YELLOW;
   }
 
   if (flog)
@@ -258,12 +260,16 @@ static void log_to_file(sve4_log_record_t* _Nonnull record,
   const char* file = sve4_log_shorten_path(
       file_buf, config ? config->path_shorten.max_length + 1 : 0, record->file,
       config ? config->path_shorten.root_prefix : SVE4_ROOT_DIR);
-  fprintf(out, "%s%s %s%-5s %s%s%s:%zu:%s %s%s", ansi_timestamp, timestamp_buf,
-          ansi_level,
+  fprintf(out, "%s%s %s%-5s %s%s%s:%zu:%s %s%s%s [%s]%s ", ansi_timestamp,
+          timestamp_buf, ansi_level,
           record->level >= 0 && record->level < SVE4_LOG_LEVEL_MAX
               ? log_level_names[record->level]
               : "???",
           ansi_reset, ansi_location, file, record->line, ansi_flog, flog_text,
+          ansi_reset, ansi_id,
+          config ? config->id_mapping.get_log_id_name(
+                       record->id, config->id_mapping.user_data)
+                 : "???",
           ansi_reset);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
