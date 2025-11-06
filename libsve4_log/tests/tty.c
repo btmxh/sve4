@@ -39,6 +39,7 @@ static MunitResult enable_ansi_tmpfile(const MunitParameter params[],
   (void)params;
   (void)user_data;
   FILE* file = tmpfile();
+  munit_assert_not_null(file);
   munit_assert_false(sve4_log_enable_ansi_escape_codes(file));
   fclose(file);
   return MUNIT_OK;

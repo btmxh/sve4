@@ -82,11 +82,11 @@ static void* setup_log(const MunitParameter params[], void* user_data) {
 }
 
 static void teardown_log(void* user_data) {
+  (void)user_data;
   if (atomic_fetch_sub(&log_init_refcount, 1) > 1)
     return;
 
-  (void)user_data;
-  sve4_log_destroy(); // intentionally omitted
+  sve4_log_destroy();
 }
 
 // pretty much same as basic.c
@@ -151,8 +151,8 @@ static const MunitSuite test_suite = {
         {
             "/external",
             test_external_log,
-            NULL,
-            NULL,
+            setup_log,
+            teardown_log,
             MUNIT_TEST_OPTION_NONE,
             NULL,
         },
