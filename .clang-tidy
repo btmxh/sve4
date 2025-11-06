@@ -9,14 +9,17 @@ Checks: >
   readability-*,
   misc-*,
   -readability-braces-around-statements,
+  -readability-implicit-bool-conversion,
   -clang-diagnostic-nullability-extension,
-  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling
+  -clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling,
+  -modernize-use-nullptr,
+  -readability-use-concise-preprocessor-directives
 
 # Warnings as errors
 WarningsAsErrors: ''
 
 # Treat certain files differently (optional)
-HeaderFilterRegex: '.*'
+HeaderFilterRegex: '^.*/libsve4/.*'
 
 # Extra options
 CheckOptions:

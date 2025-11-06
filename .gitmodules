@@ -1,3 +1,6 @@
 [submodule "extern/munit"]
 	path = extern/munit
 	url = https://github.com/ngtcp2/munit
+[submodule "extern/tinycthread"]
+	path = extern/tinycthread
+	url = https://github.com/tinycthread/tinycthread

@@ -31,6 +31,9 @@ set(CTEST_MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
 add_subdirectory(extern)
 
 function(sve4_add_test)
+    if(SVE4_ENABLE_FUZZING)
+        return()
+    endif()
     set(oneValueArgs
         PREFIX
         SOURCE
@@ -66,6 +69,8 @@ function(sve4_add_test)
     sve4_set_target_default_properties(TARGETS ${TEST_EXECUTABLE_NAME})
 endfunction()
 
+set(SVE4_ROOT_DIR "${CMAKE_CURRENT_LIST_DIR}")
+
 function(sve4_set_target_default_properties)
     set(multiValueArgs TARGETS)
     cmake_parse_arguments(PARSE_ARGV 0 ARG "" "" "${multiValueArgs}")
@@ -74,6 +79,12 @@ function(sve4_set_target_default_properties)
         if(SVE4_CLANG_TIDY)
             set(clangTidyArgs "clang-tidy;--use-color=1;--warnings-as-errors=*")
         endif()
+
+        target_compile_definitions(
+            ${target}
+            PRIVATE
+                "-DSVE4_ROOT_DIR=\"${SVE4_ROOT_DIR}\""
+        )
 
         set_target_properties(
             ${target}
@@ -122,4 +133,5 @@ function(sve4_generate_export_header TARGET)
 endfunction()
 
 add_subdirectory(libsve4_utils)
+add_subdirectory(libsve4_log)
 add_subdirectory(libsve4_decode)

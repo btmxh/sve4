@@ -1,0 +1,40 @@
+#pragma once
+
+#define SVE4_LOG_ANSI_RESET "\x1b[0m"
+
+#define SVE4_LOG_ANSI_FG_BLACK "\x1b[30m"
+#define SVE4_LOG_ANSI_FG_RED "\x1b[31m"
+#define SVE4_LOG_ANSI_FG_GREEN "\x1b[32m"
+#define SVE4_LOG_ANSI_FG_YELLOW "\x1b[33m"
+#define SVE4_LOG_ANSI_FG_BLUE "\x1b[34m"
+#define SVE4_LOG_ANSI_FG_MAGENTA "\x1b[35m"
+#define SVE4_LOG_ANSI_FG_CYAN "\x1b[36m"
+#define SVE4_LOG_ANSI_FG_WHITE "\x1b[37m"
+
+#define SVE4_LOG_ANSI_FG_BRIGHT_BLACK "\x1b[90m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_RED "\x1b[91m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_GREEN "\x1b[92m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_YELLOW "\x1b[93m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_BLUE "\x1b[94m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_MAGENTA "\x1b[95m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_CYAN "\x1b[96m"
+#define SVE4_LOG_ANSI_FG_BRIGHT_WHITE "\x1b[97m"
+
+// Background colors
+#define SVE4_LOG_ANSI_BG_BLACK "\x1b[40m"
+#define SVE4_LOG_ANSI_BG_RED "\x1b[41m"
+#define SVE4_LOG_ANSI_BG_GREEN "\x1b[42m"
+#define SVE4_LOG_ANSI_BG_YELLOW "\x1b[43m"
+#define SVE4_LOG_ANSI_BG_BLUE "\x1b[44m"
+#define SVE4_LOG_ANSI_BG_MAGENTA "\x1b[45m"
+#define SVE4_LOG_ANSI_BG_CYAN "\x1b[46m"
+#define SVE4_LOG_ANSI_BG_WHITE "\x1b[47m"
+
+#define SVE4_LOG_ANSI_BG_BRIGHT_BLACK "\x1b[100m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_RED "\x1b[101m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_GREEN "\x1b[102m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_YELLOW "\x1b[103m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_BLUE "\x1b[104m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_MAGENTA "\x1b[105m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_CYAN "\x1b[106m"
+#define SVE4_LOG_ANSI_BG_BRIGHT_WHITE "\x1b[107m"

@@ -27,4 +27,23 @@ if(BUILD_TESTING)
                     11
         )
     endif()
+    set_property(
+        TARGET
+            munit
+        PROPERTY
+            POSITION_INDEPENDENT_CODE
+                True
+    )
 endif()
+
+# add_subdirectory(tinycthread) error due to outdated CMake
+add_library(
+    tinycthread
+    STATIC
+    tinycthread/source/tinycthread.c
+    tinycthread/source/tinycthread.h
+)
+
+find_package(Threads REQUIRED)
+target_include_directories(tinycthread PUBLIC tinycthread/source)
+target_link_libraries(tinycthread PUBLIC Threads::Threads)
