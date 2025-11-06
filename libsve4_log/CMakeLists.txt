@@ -8,6 +8,8 @@ set(SVE4_LOG_FILES
     init.c
     tty.h
     tty.c
+    glfw.h
+    glfw.c
 )
 
 if(FFmpeg_FOUND)

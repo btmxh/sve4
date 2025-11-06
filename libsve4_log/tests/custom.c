@@ -24,6 +24,7 @@ static const char* custom_get_log_id_name(sve4_log_id_t log_id,
     return "custom-ffmpeg";
   case SVE4_LOG_ID_DEFAULT_VULKAN:
     return "custom-vulkan";
+  default:;
   }
 
   return "idk";

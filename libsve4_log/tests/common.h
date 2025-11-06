@@ -19,6 +19,8 @@ static MunitResult test_app_log(const MunitParameter params[],
             SVE4_LOG_LEVEL_INFO, "This is an FFmpeg log: %d", 456);
   sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, __FILE__, __LINE__, true,
             SVE4_LOG_LEVEL_INFO, "This is an Vulkan log: %d", 456);
+  sve4_glog(SVE4_LOG_ID_DEFAULT_GLFW, __FILE__, __LINE__, true,
+            SVE4_LOG_LEVEL_INFO, "This is an GLFW log: %d", 456);
   sve4_glog(SVE4_LOG_ID_DEFAULT_SVE4_LOG, __FILE__, __LINE__, true,
             SVE4_LOG_LEVEL_INFO, "This is an sve4-log log: %d", 456);
   sve4_glog(SVE4_LOG_ID_DEFAULT_SVE4_DECODE, __FILE__, __LINE__, true,
@@ -43,6 +45,8 @@ static MunitResult test_external_log(const MunitParameter params[],
             "This is an sve4-log log: %d", 456);
   sve4_flog(SVE4_LOG_ID_DEFAULT_SVE4_DECODE, SVE4_LOG_LEVEL_INFO,
             "This is an sve4-decode log: %d", 456);
+  sve4_flog(SVE4_LOG_ID_DEFAULT_GLFW, SVE4_LOG_LEVEL_INFO,
+            "This is an GLFW log: %d", 456);
   // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
   sve4_flog(42, SVE4_LOG_LEVEL_INFO, "This is an external log from 42: %d",
             727);

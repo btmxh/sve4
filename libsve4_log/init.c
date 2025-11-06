@@ -76,6 +76,8 @@ static const char* _Nonnull get_log_id_name_default(
     return "FFMPEG ";
   case SVE4_LOG_ID_DEFAULT_VULKAN:
     return "VULKAN ";
+  case SVE4_LOG_ID_DEFAULT_GLFW:
+    return " GLFW  ";
   }
 
   return "???";
