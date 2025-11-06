@@ -28,6 +28,18 @@ if(WebP_FOUND)
             WebP::webp
             WebP::webpdemux
     )
+    target_compile_definitions(sve4_decode PUBLIC SVE4_DECODE_HAVE_WEBP)
+endif()
+
+if(FFmpeg_FOUND)
+    target_link_libraries(
+        sve4_decode
+        PUBLIC
+            FFmpeg::AVCODEC
+            FFmpeg::AVFORMAT
+            FFmpeg::AVUTIL
+    )
+    target_compile_definitions(sve4_decode PUBLIC SVE4_DECODE_HAVE_FFMPEG)
 endif()
 
 add_library(sve4::decode ALIAS sve4_decode)
