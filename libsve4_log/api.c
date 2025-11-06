@@ -36,8 +36,6 @@ void sve4_glog(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
   va_end(args);
 }
 
-#define sve4_min(x, y) (((x) < (y)) ? (x) : (y))
-
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 const char* sve4_log_shorten_path(char* buffer, size_t buf_size,
                                   const char* path,
