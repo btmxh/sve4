@@ -163,8 +163,6 @@ void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
                              void* _Nullable ptr, size_t old_size,
                              size_t new_size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  if (!ptr)
-    return alloc->alloc(alloc, new_size, SVE4_MAX_ALIGN);
   return alloc->grow(alloc, ptr, old_size, new_size, SVE4_MAX_ALIGN);
 }
 
