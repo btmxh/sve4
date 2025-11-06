@@ -80,6 +80,22 @@ static MunitResult test_free_random_memory(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+static MunitResult test_alloc_aligned(const MunitParameter params[],
+                                      void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  sve4_allocator_t alloc = sve4_allocator_arena_init;
+
+  size_t size = 128, align = SVE4_MAX_ALIGN * 2;
+  void* ptr = sve4_aligned_alloc(&alloc, size, align);
+  munit_assert_ptr_null(ptr);
+
+  sve4_allocator_arena_destroy(&alloc);
+
+  return MUNIT_OK;
+}
+
 static MunitTest test_suite_tests[] = {
     {
         "/simple_alloc",
@@ -106,8 +122,16 @@ static MunitTest test_suite_tests[] = {
         NULL,
     },
     {
-        "/arena_free_random_memory",
+        "/free_random_memory",
         test_free_random_memory,
+        NULL,
+        NULL,
+        MUNIT_TEST_OPTION_NONE,
+        NULL,
+    },
+    {
+        "/alloc_aligned",
+        test_alloc_aligned,
         NULL,
         NULL,
         MUNIT_TEST_OPTION_NONE,
