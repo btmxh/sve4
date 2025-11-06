@@ -17,6 +17,7 @@ static MunitResult test_err_string(const MunitParameter params[],
                             "Memory allocation error");
   munit_assert_string_equal(sve4_log_error_to_string(SVE4_LOG_ERROR_THREADS),
                             "Threading error");
+  // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
   munit_assert_string_equal(
       sve4_log_error_to_string((sve4_log_error_t)0xDEADBEEF), "Unknown error");
   return MUNIT_OK;
