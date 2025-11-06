@@ -48,7 +48,8 @@ static void teardown_log(void* user_data) {
   sve4_log_destroy(); // intentionally omitted
 }
 
-static MunitResult test_log(const MunitParameter params[], void* user_data) {
+static MunitResult test_app_log(const MunitParameter params[],
+                                void* user_data) {
   (void)params;
   (void)user_data;
   int a = 621;
@@ -62,6 +63,18 @@ static MunitResult test_log(const MunitParameter params[], void* user_data) {
   // munit panic on error
   // sve4_log_error("Error!");
 
+  return MUNIT_OK;
+}
+
+static MunitResult test_external_log(const MunitParameter params[],
+                                     void* user_data) {
+  (void)params;
+  (void)user_data;
+  sve4_flog(SVE4_LOG_ID_DEFAULT_FFMPEG, SVE4_LOG_LEVEL_INFO,
+            "This is an external log: %d", 456);
+  sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, "/usr/include/vulkan/vulkan.hpp", 621,
+            true, SVE4_LOG_LEVEL_WARNING, "Vulkan validation layer warning: %s",
+            "warning message");
   return MUNIT_OK;
 }
 
@@ -79,7 +92,7 @@ static const MunitSuite test_suite = {
     (MunitTest[]){
         {
             "/init",
-            test_log,
+            test_app_log,
             setup_log,
             teardown_log,
             MUNIT_TEST_OPTION_NONE,
@@ -88,6 +101,14 @@ static const MunitSuite test_suite = {
         {
             "/freestanding",
             test_freestanding_log,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "/external",
+            test_external_log,
             NULL,
             NULL,
             MUNIT_TEST_OPTION_NONE,
