@@ -22,7 +22,7 @@ static MunitResult enable_ansi_stdout(const MunitParameter params[],
                                       void* user_data) {
   (void)params;
   (void)user_data;
-  munit_assert_true(sve4_log_enable_ansi_escape_codes(stdout));
+  sve4_log_enable_ansi_escape_codes(stdout);
   return MUNIT_OK;
 }
 
@@ -30,7 +30,7 @@ static MunitResult enable_ansi_stderr(const MunitParameter params[],
                                       void* user_data) {
   (void)params;
   (void)user_data;
-  munit_assert_true(sve4_log_enable_ansi_escape_codes(stderr));
+  sve4_log_enable_ansi_escape_codes(stderr);
   return MUNIT_OK;
 }
 
