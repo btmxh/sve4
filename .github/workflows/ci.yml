@@ -29,7 +29,8 @@ jobs:
       run: |
         sudo apt-get install -y -q \
           libwebp-dev \
-          ffmpeg
+          ffmpeg \
+          libglfw3-dev
 
     - name: Configure
       run: cmake --preset=ci-coverage -Wno-error=dev
@@ -66,7 +67,8 @@ jobs:
         sudo apt-get update -q &&
         sudo apt-get install -y -q \
           libwebp-dev \
-          ffmpeg
+          ffmpeg \
+          libglfw3-dev
 
     - name: Configure
       run: cmake --preset=ci-sanitize -Wno-error=dev
