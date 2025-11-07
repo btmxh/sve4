@@ -127,7 +127,7 @@ jobs:
 
     - name: Install vcpkg build dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-24.04'
-      run: sudo apt-get install nasm
+      run: sudo apt-get install nasm libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
 
     - name: Install dependencies
       uses: johnwason/vcpkg-action@v7
