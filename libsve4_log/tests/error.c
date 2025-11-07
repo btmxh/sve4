@@ -1,10 +1,8 @@
-#include "error.h"
+#include "libsve4_log/error.h"
 
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
-
-#include <libsve4_log/error.h>
 
 #include "munit.h"
 
