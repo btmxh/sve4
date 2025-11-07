@@ -1,6 +1,5 @@
-#include "allocator.h"
-
-#include "munit.h"
+#include <libsve4_utils/allocator.h>
+#include <munit.h>
 
 static MunitResult test_simple_alloc(const MunitParameter params[],
                                      void* user_data) {

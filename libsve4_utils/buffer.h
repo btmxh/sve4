@@ -3,9 +3,10 @@
 #include <stdatomic.h>
 #include <stddef.h>
 
+#include "sve4_utils_export.h"
+
 #include "allocator.h"
 #include "defines.h"
-#include "sve4_utils_export.h"
 
 typedef void (*sve4_destructor_t)(char* _Nonnull data);
 

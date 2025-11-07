@@ -2,13 +2,15 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#include "sve4_decode_export.h"
+
+#include <libsve4_utils/allocator.h>
+#include <libsve4_utils/defines.h>
 #include <webp/demux.h>
 
-#include "allocator.h"
-#include "defines.h"
 #include "error.h"
 #include "frame.h"
-#include "sve4_decode_export.h"
 
 typedef struct SVE4_DECODE_EXPORT {
   WebPData data;

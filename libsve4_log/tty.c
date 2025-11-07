@@ -3,10 +3,11 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+
+#include "libsve4_utils/defines.h"
+
 // NOLINTNEXTLINE(misc-include-cleaner)
 #include <tinycthread.h>
-
-#include "defines.h"
 
 #if sve4_has_include(<unistd.h>)
 #include <unistd.h>

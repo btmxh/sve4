@@ -2,9 +2,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "libsve4_log/init.h"
+#include "libsve4_utils/buffer.h"
+
 #include "common.h"
-#include "error.h"
-#include "init.h"
 #include "munit.h"
 
 #define assert_success(err)                                                    \

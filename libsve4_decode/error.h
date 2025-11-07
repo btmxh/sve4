@@ -3,8 +3,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "defines.h"
-#include "sve4_decode_export.h"
+#include <libsve4_utils/defines.h>
+#include <sve4_decode_export.h>
 
 typedef enum {
   SVE4_DECODE_ERROR_SRC_DEFAULT = 0,

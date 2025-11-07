@@ -1,6 +1,7 @@
-#include "arena.h"
+#include "libsve4_utils/arena.h"
 
-#include "allocator.h"
+#include "libsve4_utils/allocator.h"
+
 #include "munit.h"
 
 static MunitResult test_simple_alloc(const MunitParameter params[],

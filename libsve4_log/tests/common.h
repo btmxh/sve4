@@ -1,6 +1,7 @@
 #pragma once
 
-#include "api.h"
+#include "libsve4_log/api.h"
+
 #include "munit.h"
 
 static MunitResult test_app_log(const MunitParameter params[],

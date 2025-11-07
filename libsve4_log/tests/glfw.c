@@ -1,15 +1,16 @@
-#include "glfw.h"
+#include "libsve4_log/glfw.h"
 
-#include <GLFW/glfw3.h>
 #include <assert.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "init.h"
-#include "munit.h"
+#include "libsve4_log/init.h"
 
-#include "tests/counter.h"
+#include <GLFW/glfw3.h>
+
+#include "counter.h"
+#include "munit.h"
 
 #define assert_success(err)                                                    \
   munit_assert_int((int)err, ==, SVE4_LOG_ERROR_SUCCESS)

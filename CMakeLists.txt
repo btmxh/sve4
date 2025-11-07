@@ -98,6 +98,8 @@ function(sve4_set_target_default_properties)
                 "-DSVE4_ROOT_DIR=\"${SVE4_ROOT_DIR}\""
         )
 
+        target_include_directories(${target} PRIVATE "${SVE4_ROOT_DIR}")
+
         set_target_properties(
             ${target}
             PROPERTIES

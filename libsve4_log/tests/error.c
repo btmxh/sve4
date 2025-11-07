@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <libsve4_log/error.h>
+
 #include "munit.h"
 
 static MunitResult test_err_string(const MunitParameter params[],

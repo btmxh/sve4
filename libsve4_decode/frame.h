@@ -2,9 +2,9 @@
 
 #include <stdint.h>
 
-#include "buffer.h"
-#include "formats.h"
-#include "sve4_decode_export.h"
+#include <libsve4_utils/buffer.h>
+#include <libsve4_utils/formats.h>
+#include <sve4_decode_export.h>
 
 typedef enum {
   SVE4_DECODE_FRAME_KIND_NONE = 0,

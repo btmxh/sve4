@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "allocator.h"
-#include "buffer.h"
+#include <libsve4_utils/allocator.h>
+#include <libsve4_utils/buffer.h>
+#include <libsve4_utils/formats.h>
+
 #include "error.h"
-#include "formats.h"
 #include "frame.h"
 
 sve4_decode_error_t sve4_decode_alloc_ram_frame(sve4_decode_frame_t* frame,

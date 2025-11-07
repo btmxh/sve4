@@ -4,8 +4,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include "defines.h"
-#include "sve4_log_export.h"
+#include "libsve4_utils/defines.h"
+
+#include <sve4_log_export.h>
 
 typedef enum {
   SVE4_LOG_LEVEL_DEFAULT = -1,

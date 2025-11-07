@@ -4,11 +4,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "allocator.h"
-#include "error.h"
-#include "libwebp.h"
-#include "munit.h"
-#include "ram_frame.h"
+#include <libsve4_decode/error.h>
+#include <libsve4_decode/libwebp.h>
+#include <libsve4_decode/ram_frame.h>
+#include <libsve4_utils/allocator.h>
+#include <munit.h>
 
 #define ASSETS_DIR "../../../../assets/"
 enum { MS = (int64_t)1e6 };
