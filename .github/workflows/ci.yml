@@ -133,7 +133,7 @@ jobs:
       uses: johnwason/vcpkg-action@v7
       id: vcpkg
       with:
-        pkgs: libwebp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis]
+        pkgs: libwebp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis] glfw3
         triplet: ${{ matrix.vcpkg_triplet }}
         cache-key: ${{ matrix.os }}
         revision: master

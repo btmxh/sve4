@@ -12,3 +12,13 @@ if(FFmpeg_FOUND)
             FFmpeg::AVUTIL
     )
 endif()
+
+if(glfw3_FOUND)
+    sve4_add_test(
+        PREFIX log
+        SOURCE glfw.c
+        LIBRARIES
+            sve4::log
+            glfw
+    )
+endif()

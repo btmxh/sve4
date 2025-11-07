@@ -33,6 +33,8 @@ find_package(
     QUIET
 )
 
+find_package(glfw3 QUIET)
+
 find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")
 set(CTEST_MEMORYCHECK_COMMAND valgrind)
