@@ -2,11 +2,9 @@
 
 #include <GLFW/glfw3.h>
 #include <assert.h>
-#include <libavutil/log.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #include "init.h"
 #include "munit.h"
