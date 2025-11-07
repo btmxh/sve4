@@ -3,8 +3,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "defines.h"
 #include "sve4_utils_export.h"
+
+#include "defines.h"
 
 typedef enum {
   SVE4_FMT_SRC_DEFAULT = 0,

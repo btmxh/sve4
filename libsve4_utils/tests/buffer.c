@@ -1,6 +1,6 @@
-#include "buffer.h"
-
 #include <stdbool.h>
+
+#include <libsve4_utils/buffer.h>
 
 #include "munit.h"
 

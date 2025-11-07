@@ -4,12 +4,14 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "allocator.h"
-#include "api.h"
-#include "buffer.h"
-#include "defines.h"
-#include "error.h"
 #include "sve4_log_export.h"
+
+#include "libsve4_utils/allocator.h"
+#include "libsve4_utils/buffer.h"
+#include "libsve4_utils/defines.h"
+
+#include "api.h"
+#include "error.h"
 
 typedef struct {
   sve4_log_level_t level;

@@ -1,7 +1,8 @@
 #pragma once
 
-#include "defines.h"
 #include "sve4_log_export.h"
+
+#include "libsve4_utils/defines.h"
 
 typedef enum {
   SVE4_LOG_ERROR_SUCCESS = 0,

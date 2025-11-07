@@ -4,12 +4,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <libsve4_utils/allocator.h>
+#include <libsve4_utils/buffer.h>
+#include <libsve4_utils/formats.h>
 #include <webp/demux.h>
 
-#include "allocator.h"
-#include "buffer.h"
 #include "error.h"
-#include "formats.h"
 #include "frame.h"
 #include "ram_frame.h"
 

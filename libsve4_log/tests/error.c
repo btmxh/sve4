@@ -1,4 +1,4 @@
-#include "error.h"
+#include "libsve4_log/error.h"
 
 #include <assert.h>
 #include <stdbool.h>

@@ -9,7 +9,6 @@ add_library(
     arena.h
     arena.c
 )
-target_include_directories(sve4_utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 sve4_set_target_default_properties(TARGETS sve4_utils)
 sve4_generate_export_header(sve4_utils)
 add_library(sve4::utils ALIAS sve4_utils)

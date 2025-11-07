@@ -1,17 +1,18 @@
 #include "ffmpeg.h"
 
 #include <assert.h>
-#include <libavutil/fifo.h>
-#include <libavutil/log.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <tinycthread.h>
 
-#include "allocator.h"
-#include "api.h"
-#include "arena.h"
+#include "libsve4_log/api.h"
+#include "libsve4_utils/allocator.h"
+#include "libsve4_utils/arena.h"
+
+#include <libavutil/fifo.h>
+#include <libavutil/log.h>
+#include <tinycthread.h>
 
 static sve4_log_level_t ffmpeg_level_to_sve4(int level) {
   switch (level) {

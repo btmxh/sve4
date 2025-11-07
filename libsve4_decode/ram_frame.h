@@ -2,12 +2,13 @@
 
 #include <stdint.h>
 
-#include "buffer.h"
-#include "defines.h"
+#include <libsve4_utils/buffer.h>
+#include <libsve4_utils/defines.h>
+#include <libsve4_utils/formats.h>
+#include <sve4_decode_export.h>
+
 #include "error.h"
-#include "formats.h"
 #include "frame.h"
-#include "sve4_decode_export.h"
 
 enum { SVE4_DECODE_RAM_FRAME_MAX_PLANES = 8 };
 

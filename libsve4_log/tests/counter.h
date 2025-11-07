@@ -1,9 +1,10 @@
 #pragma once
 
 #include <assert.h>
-#include <munit.h>
 
-#include "init.h"
+#include "libsve4_log/init.h"
+
+#include <munit.h>
 
 static void increase_log_counter(sve4_log_record_t* record,
                                  const sve4_log_config_t* config) {

@@ -9,15 +9,38 @@ AllowShortFunctionsOnASingleLine: None
 SortIncludes: true
 IncludeBlocks: Regroup
 IncludeCategories:
-  - Regex: '^<.*\.h>'
+  # Standard C library headers
+  - Regex: '^<(assert|ctype|errno|float|limits|locale|math|setjmp|string|signal|stdarg|stddef|stdio|stdlib|time|inttypes|stdint|stdbool|stdalign|stdatomic|wchar|wctype)\.h>$'
     Priority: 1
     SortPriority: 0
     CaseSensitive: false
-  - Regex: '^"[^/]+\.h"'
+
+  # Special exported project headers: sve4_*_export.h
+  - Regex: '^"sve4_.*_export\.h"$'
     Priority: 2
     SortPriority: 0
     CaseSensitive: false
-  - Regex: '^".*"'
+
+  # Other project headers in libsve4_*
+  - Regex: '^"libsve4_.*"'
     Priority: 3
+    SortPriority: 0
+    CaseSensitive: false
+
+  # Third-party headers (<...> not stdlib or export)
+  - Regex: '^<.*>'
+    Priority: 4
+    SortPriority: 0
+    CaseSensitive: false
+
+
+  - Regex: '^"libsve4_.*"'
+    Priority: 5
+    SortPriority: 0
+    CaseSensitive: false
+
+  # Relative project headers
+  - Regex: '^"[^/]+\.h"'
+    Priority: 6
     SortPriority: 0
     CaseSensitive: false

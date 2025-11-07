@@ -4,8 +4,9 @@
 #include <stdalign.h>
 #include <stddef.h>
 
-#include "defines.h"
 #include "sve4_utils_export.h"
+
+#include "defines.h"
 
 #ifdef _MSC_VER
 // https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30

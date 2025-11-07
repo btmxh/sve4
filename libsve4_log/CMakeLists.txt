@@ -31,8 +31,6 @@ if(Vulkan_FOUND)
 endif()
 
 add_library(sve4_log ${SVE4_LOG_FILES})
-
-target_include_directories(sve4_log PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 sve4_set_target_default_properties(TARGETS sve4_log)
 sve4_generate_export_header(sve4_log)
 add_library(sve4::log ALIAS sve4_log)

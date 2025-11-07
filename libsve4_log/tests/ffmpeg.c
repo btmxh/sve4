@@ -1,16 +1,16 @@
-#include "ffmpeg.h"
+#include "libsve4_log/ffmpeg.h"
 
 #include <assert.h>
-#include <libavutil/log.h>
 #include <stdatomic.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 
-#include "init.h"
+#include "libsve4_log/init.h"
+
+#include <libavutil/log.h>
+
+#include "counter.h"
 #include "munit.h"
-
-#include "tests/counter.h"
 
 #define assert_success(err)                                                    \
   munit_assert_int((int)err, ==, SVE4_LOG_ERROR_SUCCESS)

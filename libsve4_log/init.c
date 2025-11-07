@@ -10,13 +10,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+
+#include "libsve4_utils/allocator.h"
+#include "libsve4_utils/buffer.h"
+
 // NOLINTNEXTLINE(misc-include-cleaner)
 #include <tinycthread.h>
 
-#include "allocator.h"
 #include "ansi.h"
 #include "api.h"
-#include "buffer.h"
 #include "error.h"
 #include "tty.h"
 
