@@ -10,6 +10,8 @@ project(
         CXX
 )
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+
 if(SVE4_DEVELOPER_MODE)
     if(NOT PROJECT_IS_TOP_LEVEL)
         message(
@@ -22,6 +24,16 @@ if(SVE4_DEVELOPER_MODE)
 endif()
 
 find_package(WebP QUIET)
+find_package(FFmpeg QUIET)
+find_package(
+    Vulkan
+    COMPONENTS
+        Headers
+        volk
+    QUIET
+)
+
+find_package(glfw3 QUIET)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--trace-children=yes --leak-check=full")

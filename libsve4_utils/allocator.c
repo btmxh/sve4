@@ -9,21 +9,10 @@
 
 #include "defines.h"
 
-#ifdef _MSC_VER
-// https://github.com/microsoft/STL/blob/1118f375859015034d221c6fdba73a9605c4a086/stl/inc/cstddef#L30
-#define MAX_ALIGN alignof(double)
-
-// MSVC does not have aligned_alloc, but has _aligned_malloc/_aligned_free
-#include <malloc.h>
-#define aligned_alloc(alignment, size) _aligned_malloc(size, alignment)
-#else
-#define MAX_ALIGN alignof(max_align_t)
-#endif
-
 static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
                         size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= MAX_ALIGN))
+  if (sve4_likely(alignment <= SVE4_MAX_ALIGN))
     return malloc(size);
   return aligned_alloc(alignment, size);
 }
@@ -31,7 +20,7 @@ static void* libc_alloc(sve4_allocator_t* _Nonnull self, size_t size,
 static void* libc_calloc(sve4_allocator_t* _Nonnull self, size_t size,
                          size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= MAX_ALIGN))
+  if (sve4_likely(alignment <= SVE4_MAX_ALIGN))
     return calloc(1, size);
   void* ptr = aligned_alloc(alignment, size);
   if (ptr)
@@ -46,7 +35,7 @@ static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
   (void)alignment;
   free(ptr);
 #else
-  if (alignment > MAX_ALIGN)
+  if (alignment > SVE4_MAX_ALIGN)
     _aligned_free(ptr);
   else
     free(ptr);
@@ -56,7 +45,7 @@ static void libc_free(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
 static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
                        size_t old_size, size_t new_size, size_t alignment) {
   (void)self;
-  if (sve4_likely(alignment <= MAX_ALIGN))
+  if (sve4_likely(alignment <= SVE4_MAX_ALIGN))
     return realloc(ptr, new_size);
 #ifdef _MSC_VER
   (void)old_size;
@@ -73,8 +62,8 @@ static void* libc_grow(sve4_allocator_t* _Nonnull self, void* _Nullable ptr,
 #endif
 }
 
-static const sve4_allocator_t libc_allocator = {NULL, libc_alloc, libc_calloc,
-                                                libc_grow, libc_free};
+static const sve4_allocator_t libc_allocator = {
+    {NULL, NULL}, libc_alloc, libc_calloc, libc_grow, libc_free};
 
 static inline sve4_allocator_t* _Nonnull sve4_allocator_get_or_default(
     sve4_allocator_t* _Nullable allocator) {
@@ -149,13 +138,13 @@ void sve4_allocator_impl_missing(sve4_allocator_t* _Nonnull allocator) {
 void* _Nullable sve4_malloc(sve4_allocator_t* _Nullable allocator,
                             size_t size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  return alloc->alloc(alloc, size, MAX_ALIGN);
+  return alloc->alloc(alloc, size, SVE4_MAX_ALIGN);
 }
 
 void* _Nullable sve4_calloc(sve4_allocator_t* _Nullable allocator,
                             size_t size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  return alloc->calloc(alloc, size, MAX_ALIGN);
+  return alloc->calloc(alloc, size, SVE4_MAX_ALIGN);
 }
 
 void* _Nullable sve4_aligned_alloc(sve4_allocator_t* _Nullable allocator,
@@ -174,9 +163,7 @@ void* _Nullable sve4_realloc(sve4_allocator_t* _Nullable allocator,
                              void* _Nullable ptr, size_t old_size,
                              size_t new_size) {
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  if (!ptr)
-    return alloc->alloc(alloc, new_size, MAX_ALIGN);
-  return alloc->grow(alloc, ptr, old_size, new_size, MAX_ALIGN);
+  return alloc->grow(alloc, ptr, old_size, new_size, SVE4_MAX_ALIGN);
 }
 
 void* _Nullable sve4_aligned_realloc(sve4_allocator_t* _Nullable allocator,
@@ -192,7 +179,7 @@ void sve4_free(sve4_allocator_t* _Nullable allocator, void* _Nullable ptr) {
   if (!ptr)
     return;
   sve4_allocator_t* alloc = sve4_allocator_get_or_default(allocator);
-  alloc->free(alloc, ptr, MAX_ALIGN);
+  alloc->free(alloc, ptr, SVE4_MAX_ALIGN);
 }
 
 void sve4_aligned_free(sve4_allocator_t* _Nullable allocator,

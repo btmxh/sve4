@@ -4,3 +4,6 @@
 [submodule "extern/tinycthread"]
 	path = extern/tinycthread
 	url = https://github.com/tinycthread/tinycthread
+[submodule "extern/arena"]
+	path = extern/arena
+	url = https://github.com/tsoding/arena

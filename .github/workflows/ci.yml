@@ -29,10 +29,11 @@ jobs:
       run: |
         sudo apt-get install -y -q \
           libwebp-dev \
-          ffmpeg
+          ffmpeg \
+          libglfw3-dev
 
     - name: Configure
-      run: cmake --preset=ci-coverage
+      run: cmake --preset=ci-coverage -Wno-error=dev
 
     - name: Build
       run: cmake --build build/coverage -j 2
@@ -66,10 +67,11 @@ jobs:
         sudo apt-get update -q &&
         sudo apt-get install -y -q \
           libwebp-dev \
-          ffmpeg
+          ffmpeg \
+          libglfw3-dev
 
     - name: Configure
-      run: cmake --preset=ci-sanitize
+      run: cmake --preset=ci-sanitize -Wno-error=dev
 
     - name: Build
       run: cmake --build build/sanitize -j 2
@@ -114,8 +116,9 @@ jobs:
 
     - name: Install static analyzers
       if: matrix.os == 'ubuntu-24.04'
-      run: >-
-        sudo apt-get install clang-tidy-18 cppcheck -y -q
+      run: >
+        sudo apt-get update -q
+        && sudo apt-get install clang-tidy-18 cppcheck -y -q
 
         sudo update-alternatives --install
         /usr/bin/clang-tidy clang-tidy
@@ -127,13 +130,13 @@ jobs:
 
     - name: Install vcpkg build dependencies (Ubuntu)
       if: matrix.os == 'ubuntu-24.04'
-      run: sudo apt-get install nasm
+      run: sudo apt-get install nasm libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
 
     - name: Install dependencies
       uses: johnwason/vcpkg-action@v7
       id: vcpkg
       with:
-        pkgs: libwebp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis]
+        pkgs: libwebp ffmpeg[x264,x265,vpx,mp3lame,opus,vorbis] glfw3
         triplet: ${{ matrix.vcpkg_triplet }}
         cache-key: ${{ matrix.os }}
         revision: master

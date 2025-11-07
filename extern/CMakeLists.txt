@@ -47,3 +47,6 @@ add_library(
 find_package(Threads REQUIRED)
 target_include_directories(tinycthread PUBLIC tinycthread/source)
 target_link_libraries(tinycthread PUBLIC Threads::Threads)
+
+add_library(arena INTERFACE)
+target_include_directories(arena INTERFACE .)

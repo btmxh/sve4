@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "defines.h"
+
 void sve4__flog(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
                 sve4_log_level_t level, const char* _Nonnull fmt, ...) {
   va_list args;
@@ -35,8 +37,6 @@ void sve4_glog(sve4_log_id_t log_id, const char* _Nonnull file, size_t line,
   sve4_glogv(log_id, file, line, endl, level, fmt, args);
   va_end(args);
 }
-
-#define sve4_min(x, y) (((x) < (y)) ? (x) : (y))
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 const char* sve4_log_shorten_path(char* buffer, size_t buf_size,
