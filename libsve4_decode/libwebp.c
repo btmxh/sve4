@@ -202,9 +202,10 @@ static bool is_frame_compatible(sve4_decode_libwebp_anim_t* anim,
   return true;
 }
 
-static sve4_decode_error_t webp_get_frame(sve4_decode_decoder_t* decoder,
-                                          sve4_decode_frame_t* frame,
-                                          const struct timespec* deadline) {
+static sve4_decode_error_t
+webp_get_frame(struct sve4_decode_decoder_t* _Nonnull decoder,
+               sve4_decode_frame_t* _Nullable frame,
+               const struct timespec* _Nullable deadline) {
   (void)deadline;
   sve4_decode_error_t err;
 #pragma GCC diagnostic push
@@ -214,6 +215,8 @@ static sve4_decode_error_t webp_get_frame(sve4_decode_decoder_t* decoder,
 #pragma GCC diagnostic pop
   if (!sve4_decode_libwebp_anim_has_more(&inner->anim))
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_EOF);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
   if (frame && !is_frame_compatible(&inner->anim, frame)) {
     sve4_log_debug(
         "libwebp: allocating new frame for decoder %p since provided frame "
@@ -225,6 +228,7 @@ static sve4_decode_error_t webp_get_frame(sve4_decode_decoder_t* decoder,
     if (!sve4_decode_error_is_success(err))
       return err;
   }
+#pragma GCC diagnostic pop
 
   return sve4_decode_libwebp_anim_decode(&inner->anim, frame);
 }
