@@ -15,11 +15,11 @@
 #include "frame.h"
 
 #ifdef SVE4_DECODE_HAVE_WEBP
-#include "ffmpeg.h"
+#include "libwebp.h"
 #endif
 
 #ifdef SVE4_DECODE_HAVE_FFMPEG
-#include "libwebp.h"
+#include "ffmpeg.h"
 #endif
 
 static size_t
@@ -122,7 +122,7 @@ sve4_decode_decoder_open(sve4_decode_decoder_t* _Nonnull decoder,
                    (void*)decoder, config->url);
     return sve4_decode_libwebp_open_decoder(decoder, config);
 #else
-    sve4_log_warning("LIBWEBP backend selected but not available");
+    sve4_log_warn("LIBWEBP backend selected but not available");
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_BACKEND_MISSING);
 #endif
 
@@ -132,7 +132,7 @@ sve4_decode_decoder_open(sve4_decode_decoder_t* _Nonnull decoder,
                    (void*)decoder, config->url);
     return sve4_decode_ffmpeg_open_decoder(decoder, config);
 #else
-    sve4_log_warning("FFMPEG backend selected but not available");
+    sve4_log_warn("FFMPEG backend selected but not available");
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_BACKEND_MISSING);
 #endif
   }

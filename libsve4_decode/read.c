@@ -1,6 +1,5 @@
 #include "read.h"
 
-#include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -10,13 +9,13 @@
 #include "libsve4_decode/error.h"
 #include "libsve4_log/api.h"
 #include "libsve4_utils/allocator.h"
-#include "libsve4_utils/arena.h"
 #include "libsve4_utils/defines.h"
 
-#include <libavutil/error.h>
-
 #ifdef SVE4_DECODE_HAVE_FFMPEG
+#include "libsve4_utils/arena.h"
+
 #include <libavformat/avio.h>
+#include <libavutil/error.h>
 #endif
 
 static sve4_decode_error_t
@@ -37,7 +36,8 @@ sve4_decode_read_file_stdio(sve4_allocator_t* _Nullable alloc,
 
   if (max_read == SIZE_MAX) {
     // determine file size
-    if (fseek(file, 0, SEEK_END) != 0) {
+    fseek(file, 0, SEEK_END);
+    if (ferror(file)) {
       fclose(file);
       return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_IO);
     }
@@ -47,8 +47,9 @@ sve4_decode_read_file_stdio(sve4_allocator_t* _Nullable alloc,
       fclose(file);
       return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_IO);
     }
-    rewind(file);
-    if (errno) {
+
+    fseek(file, 0, SEEK_SET);
+    if (ferror(file)) {
       fclose(file);
       return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_IO);
     }
@@ -84,6 +85,7 @@ typedef struct page_t {
   unsigned char data[(1 << 12) - 64 - sizeof(struct page_t*)];
 } page_t;
 
+#ifdef SVE4_DECODE_HAVE_FFMPEG
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 static sve4_decode_error_t sve4_decode_read_file_ffmpeg(
     sve4_allocator_t* _Nullable alloc, char* _Nullable* _Nonnull buffer,
@@ -211,6 +213,7 @@ fail:
   sve4_allocator_arena_destroy(&arena);
   return err;
 }
+#endif
 
 SVE4_DECODE_EXPORT
 sve4_decode_error_t sve4_decode_read_url(sve4_allocator_t* _Nullable alloc,
@@ -218,7 +221,7 @@ sve4_decode_error_t sve4_decode_read_url(sve4_allocator_t* _Nullable alloc,
                                          size_t* _Nonnull bufsize,
                                          const char* _Nonnull url, bool binary,
                                          size_t max_read) {
-#if SVE4_DECODE_HAVE_FFMPEG
+#ifdef SVE4_DECODE_HAVE_FFMPEG
   if (binary) {
     sve4_log_debug("Using ffmpeg to read binary url %s", url);
     return sve4_decode_read_file_ffmpeg(alloc, buffer, bufsize, url, max_read);

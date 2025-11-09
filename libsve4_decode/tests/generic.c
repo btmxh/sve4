@@ -120,6 +120,7 @@ static MunitResult test_simple_webp(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+#ifdef SVE4_DECODE_HAVE_FFMPEG
 static MunitResult test_multi_decode_webp(const MunitParameter params[],
                                           void* user_data) {
   (void)params;
@@ -203,6 +204,7 @@ static MunitResult test_multi_decode_webp(const MunitParameter params[],
 
   return MUNIT_OK;
 }
+#endif
 
 static const MunitSuite test_suite = {
     "/webp",
@@ -217,13 +219,18 @@ static const MunitSuite test_suite = {
                 {"backend",
                  (char*[]){
                      "AUTO",
+#ifdef SVE4_DECODE_HAVE_LIBWEBP
                      "LIBWEBP",
+#endif
+#ifdef SVE4_DECODE_HAVE_FFMPEG
                      "FFMPEG",
+#endif
                      NULL,
                  }},
                 {NULL, NULL},
             },
         },
+#ifdef SVE4_DECODE_HAVE_FFMPEG
         {
             "/multi_decode_webp",
             test_multi_decode_webp,
@@ -232,6 +239,7 @@ static const MunitSuite test_suite = {
             MUNIT_TEST_OPTION_NONE,
             NULL,
         },
+#endif
         {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE,
          NULL} /* Mark the end of the array */
     },

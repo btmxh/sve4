@@ -1,6 +1,8 @@
 #include "formats.h"
 
 #include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 // sve4_log is not available here
 #define sve4_panic(...)                                                        \
@@ -9,10 +11,12 @@
     exit(1);                                                                   \
   } while (1);
 
+#ifdef SVE4_UTILS_HAVE_FFMPEG
 #include <libavutil/imgutils.h>
 #include <libavutil/pixdesc.h>
 #include <libavutil/pixfmt.h>
 #include <libavutil/samplefmt.h>
+#endif
 
 #include "allocator.h"
 
