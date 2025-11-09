@@ -10,7 +10,7 @@
 // this being a macro allows static initialization
 #define sve4_allocator_arena_init                                              \
   ((sve4_allocator_t){                                                         \
-      .state = {0},                                                            \
+      .state = {NULL, NULL},                                                   \
       .alloc = sve4__allocator_arena_alloc,                                    \
       .grow = sve4__allocator_arena_grow,                                      \
       .free = sve4__allocator_arena_free,                                      \

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,6 +16,7 @@ typedef enum {
 typedef enum {
   SVE4_PIXFMT_DEFAULT_UNKNOWN = 0,
   SVE4_PIXFMT_DEFAULT_RGBA8,
+  SVE4_PIXFMT_DEFAULT_ARGB8,
 } sve4_pixfmt_default_t;
 
 typedef struct SVE4_UTILS_EXPORT {
@@ -77,3 +79,8 @@ size_t sve4_pixfmt_num_planes(sve4_pixfmt_t pixfmt);
 SVE4_UTILS_EXPORT
 size_t sve4_pixfmt_linesize(sve4_pixfmt_t pixfmt, size_t plane, size_t width,
                             size_t align);
+SVE4_UTILS_EXPORT
+sve4_pixfmt_t sve4_pixfmt_canonicalize(sve4_pixfmt_t pixfmt);
+
+SVE4_UTILS_EXPORT
+bool sve4_pixfmt_eq(sve4_pixfmt_t lhs, sve4_pixfmt_t rhs);

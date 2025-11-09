@@ -18,6 +18,7 @@ typedef struct SVE4_DECODE_EXPORT {
   sve4_decode_frame_kind_t kind;
   sve4_fmt_t format;
   int64_t pts, duration;
+  size_t width, height;
 } sve4_decode_frame_t;
 
 SVE4_UTILS_EXPORT

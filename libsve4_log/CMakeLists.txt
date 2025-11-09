@@ -30,10 +30,24 @@ if(Vulkan_FOUND)
     )
 endif()
 
+if(BUILD_TESTING)
+    list(
+        APPEND
+        SVE4_LOG_FILES
+        init_test.h
+        init_test.c
+    )
+endif()
+
 add_library(sve4_log ${SVE4_LOG_FILES})
 sve4_set_target_default_properties(TARGETS sve4_log)
 sve4_generate_export_header(sve4_log)
 add_library(sve4::log ALIAS sve4_log)
+target_compile_definitions(
+    sve4_log
+    PRIVATE
+        "SVE4_LOG_ID_MAIN=SVE4_LOG_ID_DEFAULT_SVE4_LOG"
+)
 
 target_link_libraries(
     sve4_log
@@ -44,6 +58,7 @@ target_link_libraries(
 
 if(FFmpeg_FOUND)
     target_link_libraries(sve4_log PUBLIC FFmpeg::AVUTIL)
+    target_compile_definitions(sve4_log PUBLIC "SVE4_LOG_HAVE_FFMPEG")
 endif()
 
 if(Vulkan_FOUND)
@@ -53,12 +68,17 @@ if(Vulkan_FOUND)
             Vulkan::Headers
             Vulkan::volk
     )
-    target_compile_definitions(sve4_log PUBLIC "SVE4_HAS_VULKAN")
+    target_compile_definitions(sve4_log PUBLIC "SVE4_LOG_HAVE_VULKAN")
+endif()
+
+if(glfw3_FOUND)
+    target_link_libraries(sve4_log PUBLIC glfw)
+    target_compile_definitions(sve4_log PUBLIC "SVE4_LOG_HAVE_GLFW")
 endif()
 
 if(BUILD_TESTING)
     target_link_libraries(sve4_log PRIVATE munit)
-    target_compile_definitions(sve4_log PUBLIC "SVE4_HAS_MUNIT")
+    target_compile_definitions(sve4_log PUBLIC "SVE4_LOG_HAVE_MUNIT")
     add_subdirectory(tests)
 endif()
 

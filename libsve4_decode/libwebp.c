@@ -4,12 +4,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+#include "libsve4_decode/read.h"
+#include "libsve4_log/api.h"
 
 #include <libsve4_utils/allocator.h>
 #include <libsve4_utils/buffer.h>
 #include <libsve4_utils/formats.h>
 #include <webp/demux.h>
 
+#include "decoder.h"
 #include "error.h"
 #include "frame.h"
 #include "ram_frame.h"
@@ -39,6 +44,10 @@ sve4_decode_libwebp_open_anim(sve4_decode_libwebp_anim_t* anim,
   anim->height = info.canvas_height;
   anim->num_frames = info.frame_count;
   anim->last_pts = 0;
+
+  sve4_log_debug("libwebp: opened AnimDecoder with %zu frames, size %zux%zu",
+                 anim->num_frames, anim->width, anim->height);
+
   return sve4_decode_success;
 }
 
@@ -162,4 +171,113 @@ int64_t sve4_decode_libwebp_demux_get_total_duration(
   }
 
   return -1;
+}
+
+typedef struct {
+  sve4_decode_libwebp_anim_t anim;
+  sve4_allocator_t* allocator;
+  sve4_allocator_t* frame_allocator;
+  void* ptr;
+} decoder_inner_t;
+
+static void decoder_destructor(char* mem) {
+  decoder_inner_t* inner = (decoder_inner_t*)mem;
+  sve4_decode_libwebp_close_anim(&inner->anim);
+  sve4_free(inner->allocator, inner->ptr);
+}
+
+static bool is_frame_compatible(sve4_decode_libwebp_anim_t* anim,
+                                sve4_decode_frame_t* _Nonnull frame) {
+  if (frame->kind != SVE4_DECODE_FRAME_KIND_RAM_FRAME)
+    return false;
+  if (frame->width != sve4_decode_libwebp_anim_get_width(anim))
+    return false;
+  if (frame->height != sve4_decode_libwebp_anim_get_height(anim))
+    return false;
+  if (frame->format.kind != SVE4_PIXFMT)
+    return false;
+  if (!sve4_pixfmt_eq(frame->format.pixfmt,
+                      sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_RGBA8)))
+    return false;
+  return true;
+}
+
+static sve4_decode_error_t webp_get_frame(sve4_decode_decoder_t* decoder,
+                                          sve4_decode_frame_t* frame,
+                                          const struct timespec* deadline) {
+  (void)deadline;
+  sve4_decode_error_t err;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
+  decoder_inner_t* inner =
+      (decoder_inner_t*)sve4_buffer_get_data(decoder->data);
+#pragma GCC diagnostic pop
+  if (!sve4_decode_libwebp_anim_has_more(&inner->anim))
+    return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_EOF);
+  if (frame && !is_frame_compatible(&inner->anim, frame)) {
+    sve4_log_debug(
+        "libwebp: allocating new frame for decoder %p since provided frame "
+        "%p is not compatible",
+        (void*)decoder, (void*)frame);
+    sve4_decode_frame_free(frame);
+    err = sve4_decode_libwebp_anim_alloc(&inner->anim, inner->frame_allocator,
+                                         frame);
+    if (!sve4_decode_error_is_success(err))
+      return err;
+  }
+
+  return sve4_decode_libwebp_anim_decode(&inner->anim, frame);
+}
+
+static sve4_decode_error_t webp_seek(sve4_decode_decoder_t* decoder,
+                                     int64_t pos) {
+  (void)pos;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
+  decoder_inner_t* inner =
+      (decoder_inner_t*)sve4_buffer_get_data(decoder->data);
+#pragma GCC diagnostic pop
+  // seek to the first frame
+  // this is a hack since libwebp does not support seeking natively
+  sve4_decode_libwebp_anim_reset(&inner->anim);
+  return sve4_decode_success;
+}
+
+sve4_decode_error_t sve4_decode_libwebp_open_decoder(
+    sve4_decode_decoder_t* _Nonnull decoder,
+    const sve4_decode_decoder_config_t* _Nonnull config) {
+  sve4_decode_error_t err;
+  char* buffer = NULL;
+  size_t size = 0;
+
+  decoder->data = sve4_buffer_create(config->allocator, sizeof(decoder_inner_t),
+                                     decoder_destructor);
+  if (!decoder->data) {
+    err = sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_MEMORY);
+    goto fail;
+  }
+  err = sve4_decode_read_url(config->allocator, &buffer, &size, config->url,
+                             true, SIZE_MAX);
+  if (!sve4_decode_error_is_success(err))
+    goto fail;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
+  decoder_inner_t* inner = sve4_buffer_get_data(decoder->data);
+#pragma GCC diagnostic pop
+  inner->allocator = config->allocator;
+  inner->frame_allocator = config->frame_allocator;
+  inner->ptr = buffer;
+
+  err =
+      sve4_decode_libwebp_open_anim(&inner->anim, (const uint8_t*)buffer, size);
+  if (!sve4_decode_error_is_success(err))
+    goto fail;
+
+  decoder->get_frame = webp_get_frame;
+  decoder->seek = webp_seek;
+  return sve4_decode_success;
+
+fail:
+  sve4_decode_decoder_close(decoder);
+  return err;
 }
