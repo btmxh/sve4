@@ -45,6 +45,24 @@ if(NOT FFmpeg_FIND_COMPONENTS)
     )
 endif()
 
+# query vcpkg
+find_package(FFMPEG QUIET)
+if(FFMPEG_FOUND)
+    set(FFmpeg_FOUND TRUE)
+    add_library(FFmpeg_FFmpeg INTERFACE IMPORTED)
+    target_include_directories(FFmpeg_FFmpeg INTERFACE ${FFMPEG_INCLUDE_DIRS})
+    target_link_directories(FFmpeg_FFmpeg INTERFACE ${FFMPEG_LIBRARY_DIRS})
+    target_link_libraries(FFmpeg_FFmpeg INTERFACE ${FFMPEG_LIBRARIES})
+    add_library(FFmpeg::FFmpeg ALIAS FFmpeg_FFmpeg)
+
+    foreach(_component ${FFmpeg_FIND_COMPONENTS})
+        add_library(FFmpeg_${_component} ALIAS FFmpeg_FFmpeg)
+        add_library(FFmpeg::${_component} ALIAS FFmpeg_FFmpeg)
+    endforeach()
+
+    return()
+endif()
+
 #
 ### Macro: set_component_found
 #
