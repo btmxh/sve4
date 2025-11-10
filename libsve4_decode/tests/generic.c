@@ -14,7 +14,6 @@
 #include <libsve4_decode/ram_frame.h>
 #include <libsve4_utils/allocator.h>
 #include <munit.h>
-#include <unistd.h>
 
 #define ASSETS_DIR "../../../../assets/"
 enum { MS = (int64_t)1e6 };
