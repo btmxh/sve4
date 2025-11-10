@@ -46,7 +46,7 @@ if(NOT FFmpeg_FIND_COMPONENTS)
 endif()
 
 # query vcpkg
-find_package(FFMPEG QUIET)
+find_package(FFMPEG CONFIG QUIET)
 if(FFMPEG_FOUND)
     set(FFmpeg_FOUND TRUE)
     add_library(FFmpeg_FFmpeg INTERFACE IMPORTED)
