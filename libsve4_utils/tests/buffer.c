@@ -66,6 +66,7 @@ static MunitResult test_ref_unref(const MunitParameter params[],
   sve4_buffer_free(&buf);
   munit_assert_ptr_null(buf);
 
+  munit_assert_ptr_not_null(buf2);
   munit_assert_size(buf2->ref_count, ==, 1);
   sve4_buffer_free(&buf2);
   munit_assert_ptr_null(buf2);
@@ -96,6 +97,7 @@ static MunitResult test_ref_unref_destructor(const MunitParameter params[],
   munit_assert_ptr_null(buf);
   munit_assert_false(destroyed);
 
+  munit_assert_ptr_not_null(buf2);
   munit_assert_size(buf2->ref_count, ==, 1);
   sve4_buffer_free(&buf2);
   munit_assert_ptr_null(buf2);

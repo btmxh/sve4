@@ -12,7 +12,7 @@ set(SVE4_LOG_FILES
     glfw.c
 )
 
-if(FFmpeg_FOUND)
+if(FFmpeg_AVUTIL_FOUND)
     list(
         APPEND
         SVE4_LOG_FILES
@@ -56,7 +56,7 @@ target_link_libraries(
         tinycthread
 )
 
-if(FFmpeg_FOUND)
+if(FFmpeg_AVUTIL_FOUND)
     target_link_libraries(sve4_log PUBLIC FFmpeg::AVUTIL)
     target_compile_definitions(sve4_log PUBLIC "SVE4_LOG_HAVE_FFMPEG")
 endif()

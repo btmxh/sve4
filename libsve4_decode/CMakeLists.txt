@@ -18,7 +18,7 @@ if(WebP_FOUND)
         libwebp.c
     )
 endif()
-if(FFmpeg_FOUND)
+if(FFmpeg_AVFORMAT_FOUND AND FFmpeg_AVCODEC_FOUND AND FFmpeg_AVUTIL_FOUND)
     list(
         APPEND
         SVE4_DECODE_FILES
@@ -60,7 +60,7 @@ if(WebP_FOUND)
     target_compile_definitions(sve4_decode PUBLIC SVE4_DECODE_HAVE_WEBP)
 endif()
 
-if(FFmpeg_FOUND)
+if(FFmpeg_AVFORMAT_FOUND AND FFmpeg_AVCODEC_FOUND AND FFmpeg_AVUTIL_FOUND)
     target_link_libraries(
         sve4_decode
         PUBLIC
