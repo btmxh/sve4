@@ -92,7 +92,9 @@ static sve4_decode_error_t sve4_decode_read_file_common(
     }
 
     err = read_func(file, buf, to_read, bufsize);
-    if (!sve4_decode_error_is_success(err)) {
+    if (!sve4_decode_error_is_success(err) &&
+        (err.source != SVE4_DECODE_ERROR_SRC_DEFAULT ||
+         err.error_code != SVE4_DECODE_ERROR_DEFAULT_EOF)) {
       close_func(file);
       if (needs_alloc)
         sve4_free(alloc, buf);
