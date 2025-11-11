@@ -64,10 +64,10 @@ static sve4_decode_error_t sve4_decode_read_file_common(
                                      size_t to_read, size_t* _Nonnull nread)) {
   void* file = NULL;
   sve4_decode_error_t err = open_func(url, binary, &file);
-  assert(file);
   if (!sve4_decode_error_is_success(err))
     return err;
 
+  assert(file);
   size_t to_read = *bufsize;
   if (to_read == SIZE_MAX) {
     err = get_size(file, &to_read);
@@ -188,7 +188,8 @@ static sve4_decode_error_t stdio_read_func(void* _Nonnull file,
     *nread += read_bytes;
   }
 
-  return sve4_decode_success;
+  return *nread ? sve4_decode_success
+                : sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_EOF);
 }
 
 static sve4_decode_error_t sve4_decode_read_file_stdio(

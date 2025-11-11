@@ -17,6 +17,13 @@
 
 #include "http.h"
 
+#ifdef unix
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <tinycthread.h>
+#include <unistd.h>
+#endif
+
 #define ASSETS_DIR "../../../../assets/"
 
 #define assert_success(err)                                                    \
@@ -400,6 +407,49 @@ static MunitResult test_read_file_dev_zero(const MunitParameter params[],
 
   return MUNIT_OK;
 }
+
+#define PIPE_FIFO_URL "/tmp/unseekable.fifo"
+static int test_read_pipe_alloc_write_thread(void* ptr) {
+  (void)ptr;
+  int fd = open(PIPE_FIFO_URL, O_WRONLY);
+  assert(fd >= 0);
+  const char msg[] = "Hello from thread FIFO!\n";
+  write(fd, msg, sizeof msg - 1);
+  sleep(2);
+  close(fd);
+  return 0;
+}
+
+static MunitResult test_read_pipe_alloc(const MunitParameter params[],
+                                        void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  unlink(PIPE_FIFO_URL);
+  munit_assert_int(mkfifo(PIPE_FIFO_URL, 0666), ==, 0);
+
+  thrd_t write_thread;
+  int thrd_err =
+      thrd_create(&write_thread, test_read_pipe_alloc_write_thread, NULL);
+  munit_assert_int(thrd_err, ==, thrd_success);
+
+  char* buffer = NULL;
+  size_t bufsize = SIZE_MAX;
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, PIPE_FIFO_URL, false);
+  assert_success(err);
+
+  munit_assert_memory_equal(bufsize, buffer, "Hello from thread FIFO!\n");
+  sve4_free(NULL, buffer);
+
+  int res = 0;
+  thrd_join(write_thread, &res);
+  munit_assert_int(res, ==, 0);
+
+  unlink(PIPE_FIFO_URL);
+
+  return MUNIT_OK;
+}
 #endif
 
 static MunitResult test_read_http_basic(const MunitParameter params[],
@@ -472,7 +522,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
 #ifdef _WIN32
                      ASSETS_DIR "alice.dos.txt",
 #endif
@@ -490,7 +540,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
 #ifdef _WIN32
                      ASSETS_DIR "alice.dos.txt",
 #endif
@@ -508,7 +558,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
 #ifdef _WIN32
                      ASSETS_DIR "alice.dos.txt",
 #endif
@@ -526,7 +576,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
 #ifdef _WIN32
                      ASSETS_DIR "alice.dos.txt",
 #endif
@@ -544,7 +594,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
 #ifdef _WIN32
                      ASSETS_DIR "alice.dos.txt",
 #endif
@@ -562,7 +612,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
                      ASSETS_DIR "alice.dos.txt",
                      NULL,
                  }},
@@ -578,7 +628,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
                      ASSETS_DIR "alice.dos.txt",
                      NULL,
                  }},
@@ -594,7 +644,7 @@ static const MunitSuite test_suite = {
             (MunitParameterEnum[]){
                 {"url",
                  (char*[]){
-                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.unix.txt",
                      ASSETS_DIR "alice.dos.txt",
                      NULL,
                  }},
@@ -610,6 +660,14 @@ static const MunitSuite test_suite = {
             NULL,
         },
 #ifdef unix
+        {
+            "/text/fifo",
+            test_read_pipe_alloc,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
         {
             "/binary/dev_null",
             test_read_file_dev_null,
