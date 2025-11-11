@@ -11,13 +11,11 @@
 
 static AVPacket* make_packet(const char* msg) {
   size_t len = strlen(msg);
-  char* ptr = av_malloc(len);
-  munit_assert_ptr_not_null(ptr);
-  memcpy(ptr, msg, len);
   AVPacket* pkt = av_packet_alloc();
   munit_assert_ptr_not_null(pkt);
-  int err = av_packet_from_data(pkt, (uint8_t*)ptr, (int)len);
+  int err = av_new_packet(pkt, (int)len);
   munit_assert_int(err, ==, 0);
+  memcpy(pkt->data, msg, len);
   return pkt;
 }
 
