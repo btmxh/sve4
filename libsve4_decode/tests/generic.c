@@ -15,6 +15,10 @@
 #include <libsve4_utils/allocator.h>
 #include <munit.h>
 
+#ifdef SVE4_DECODE_HAVE_FFMPEG
+#include <libavutil/pixfmt.h>
+#endif
+
 #define ASSETS_DIR "../../../../assets/"
 enum { MS = (int64_t)1e6 };
 #define ms *MS
@@ -257,6 +261,117 @@ static MunitResult test_nonmedia_file(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+#ifdef SVE4_DECODE_HAVE_FFMPEG
+static MunitResult test_anim_basic(const MunitParameter params[],
+                                   void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* path = ASSETS_DIR "generated/4x4_anim.mkv";
+
+  sve4_decode_decoder_t decoder = {0};
+  sve4_decode_error_t err;
+  err = sve4_decode_decoder_open(
+      &decoder, &(sve4_decode_decoder_config_t){
+                    .url = path,
+                    .backend = SVE4_DECODE_DECODER_BACKEND_AUTO,
+                });
+  assert_success(err);
+
+  uint32_t frame_colors[4];
+  size_t frame_count = 0;
+  while (true) {
+    sve4_decode_frame_t frame = {0};
+    err = sve4_decode_decoder_get_frame(&decoder, &frame, NULL);
+    if (err.source == SVE4_DECODE_ERROR_SRC_DEFAULT &&
+        err.error_code == SVE4_DECODE_ERROR_DEFAULT_EOF) {
+      break;
+    }
+
+    assert_success(err);
+    munit_assert_int((int)frame.kind, ==, SVE4_DECODE_FRAME_KIND_RAM_FRAME);
+    munit_assert_size(frame.width, ==, 4);
+    munit_assert_size(frame.height, ==, 4);
+    munit_assert_int((int)frame.format.kind, ==, SVE4_PIXFMT);
+    munit_assert_true(sve4_pixfmt_eq(frame.format.pixfmt,
+                                     sve4_pixfmt_ffmpeg(AV_PIX_FMT_YUV420P)));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
+    sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
+#pragma GCC diagnostic pop
+    frame_colors[frame_count++] = ((uint32_t)(ram_frame->data[0][0] << 16)) |
+                                  ((uint32_t)(ram_frame->data[1][0] << 8)) |
+                                  ((uint32_t)(ram_frame->data[2][0] << 0));
+    munit_assert_size(frame_count, <=, sizeof(frame_colors));
+    sve4_decode_frame_free(&frame);
+  }
+
+  munit_assert_size(frame_count, ==, 4);
+  munit_assert_uint32(frame_colors[0], ==, 0x515AF0);
+  munit_assert_uint32(frame_colors[1], ==, 0x515B51);
+  munit_assert_uint32(frame_colors[2], ==, 0x29F06E);
+  // last frame repeats due to ffmpeg quirk
+  munit_assert_uint32(frame_colors[3], ==, 0x29F06E);
+
+  sve4_decode_decoder_close(&decoder);
+  return MUNIT_OK;
+}
+
+static bool read_frame_timing(sve4_decode_decoder_t* decoder, int64_t* pts,
+                              int64_t* duration) {
+  sve4_decode_frame_t frame = {0};
+  sve4_decode_error_t err =
+      sve4_decode_decoder_get_frame(decoder, &frame, NULL);
+  if (err.source == SVE4_DECODE_ERROR_SRC_DEFAULT &&
+      err.error_code == SVE4_DECODE_ERROR_DEFAULT_EOF)
+    return false;
+
+  assert_success(err);
+  munit_assert_int((int)frame.kind, ==, SVE4_DECODE_FRAME_KIND_RAM_FRAME);
+  munit_assert_size(frame.width, ==, 4);
+  munit_assert_size(frame.height, ==, 4);
+  munit_assert_int((int)frame.format.kind, ==, SVE4_PIXFMT);
+  munit_assert_true(sve4_pixfmt_eq(frame.format.pixfmt,
+                                   sve4_pixfmt_ffmpeg(AV_PIX_FMT_YUV420P)));
+  *pts = frame.pts;
+  *duration = frame.duration;
+  sve4_decode_frame_free(&frame);
+  return true;
+}
+
+static MunitResult test_anim_seek(const MunitParameter params[],
+                                  void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* path = ASSETS_DIR "generated/4x4_anim.mkv";
+
+  sve4_decode_decoder_t decoder = {0};
+  sve4_decode_error_t err;
+  err = sve4_decode_decoder_open(
+      &decoder, &(sve4_decode_decoder_config_t){
+                    .url = path,
+                    .backend = SVE4_DECODE_DECODER_BACKEND_AUTO,
+                });
+  assert_success(err);
+
+  int64_t pts = 0;
+  int64_t duration = 0;
+
+  // NOTE: the decoder API does not support exact seeking, so we can only
+  // assert that we land before the target timestamp
+  for (int64_t ts = 800 ms; ts >= 0; ts -= 50 ms) {
+    sve4_decode_decoder_seek(&decoder, ts);
+    munit_assert_true(read_frame_timing(&decoder, &pts, &duration));
+    munit_assert_int64(pts, <=, ts);
+  }
+
+  sve4_decode_decoder_close(&decoder);
+
+  return MUNIT_OK;
+}
+#endif
+
 static const MunitSuite test_suite = {
     "/generic",
     (MunitTest[]){
@@ -302,6 +417,22 @@ static const MunitSuite test_suite = {
         {
             "/nonmedia_file",
             test_nonmedia_file,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "/anim/basic",
+            test_anim_basic,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "/anim/seek",
+            test_anim_seek,
             NULL,
             NULL,
             MUNIT_TEST_OPTION_NONE,

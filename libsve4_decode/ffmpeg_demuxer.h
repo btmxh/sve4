@@ -21,6 +21,7 @@ typedef struct {
   struct sve4_decode_ffmpeg_decoder_t* _Nullable last_decoder;
   // NOLINTNEXTLINE(misc-include-cleaner)
   mtx_t decoder_linked_list_mtx;
+  bool reach_eof;
   bool use_thread;
   // NOLINTNEXTLINE(misc-include-cleaner)
   thrd_t packet_thread;

@@ -40,8 +40,8 @@ typedef enum {
 #define sve4_decode_success                                                    \
   sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_SUCCESS)
 #define sve4_decode_ffmpegerr(err)                                             \
-  err == 0 ? sve4_decode_success                                               \
-           : sve4_decode_make_error(SVE4_DECODE_ERROR_SRC_FFMPEG, err)
+  sve4_decode_error_canonicalize(                                              \
+      sve4_decode_make_error(SVE4_DECODE_ERROR_SRC_FFMPEG, err))
 
 typedef struct {
   sve4_decode_error_src_t source;
@@ -50,6 +50,9 @@ typedef struct {
   sve4_error_trace_t trace;
 #endif
 } sve4_decode_error_t;
+
+SVE4_DECODE_EXPORT
+sve4_decode_error_t sve4_decode_error_canonicalize(sve4_decode_error_t err);
 
 static inline bool sve4_decode_error_is_success(sve4_decode_error_t err) {
   return !err.error_code;

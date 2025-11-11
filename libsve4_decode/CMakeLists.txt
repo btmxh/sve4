@@ -6,6 +6,7 @@ set(SVE4_DECODE_FILES
     decoder.h
     decoder.c
     error.h
+    error.c
     read.h
     read.c
 )

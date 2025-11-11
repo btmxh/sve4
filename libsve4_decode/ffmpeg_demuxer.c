@@ -13,6 +13,7 @@
 #include <libavformat/avformat.h>
 #include <libavutil/avutil.h>
 #include <libavutil/dict.h>
+#include <libavutil/error.h>
 
 #include "decoder.h"
 #include "error.h"
@@ -61,6 +62,8 @@ sve4_decode_error_t sve4_decode_ffmpeg_open_demuxer(
   demuxer->first_decoder = demuxer->last_decoder = NULL;
   demuxer->demuxer_thread_interval = 0;
   demuxer->seek_request = -1;
+  demuxer->use_thread = false;
+  demuxer->reach_eof = false;
 
   // NOLINTNEXTLINE(misc-include-cleaner)
   if (mtx_init(&demuxer->decoder_linked_list_mtx, mtx_plain) != thrd_success) {
@@ -219,7 +222,21 @@ sve4_decode_error_t sve4_decode_ffmpeg_demuxer_read_packet(
   *packet = av_packet_alloc();
   if (!*packet)
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_MEMORY);
-  return sve4_decode_ffmpegerr(av_read_frame(demuxer->ctx, *packet));
+
+  int ffmpeg_err = av_read_frame(demuxer->ctx, *packet);
+  if (ffmpeg_err == AVERROR_EOF) {
+    av_packet_free(packet);
+    if (demuxer->reach_eof)
+      return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_EOF);
+    demuxer->reach_eof = true;
+    return sve4_decode_success;
+  }
+
+  err = sve4_decode_ffmpegerr(ffmpeg_err);
+  if (!sve4_decode_error_is_success(err))
+    av_packet_free(packet);
+
+  return err;
 }
 
 sve4_decode_error_t
@@ -241,6 +258,7 @@ sve4_decode_ffmpeg_demuxer_seek(sve4_buffer_ref_t _Nonnull demuxer_ref,
     return sve4_decode_success;
   }
 
+  demuxer->reach_eof = false;
   return sve4_decode_ffmpegerr(
       av_seek_frame(demuxer->ctx, -1, pos, AVSEEK_FLAG_BACKWARD));
 }

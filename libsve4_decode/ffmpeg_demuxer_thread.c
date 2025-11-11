@@ -29,7 +29,7 @@ typedef struct {
   int64_t demuxer_interval_ns;
   AVPacket* _Nonnull current_packet;
   size_t current_packet_idx;
-  bool reach_eof, has_pending_packet; // since NULL packet means EOF
+  bool has_pending_packet; // since NULL packet means EOF
 } thread_ctx_t;
 
 static thread_error_t thread_ctx_init(thread_ctx_t* ctx,
@@ -40,7 +40,7 @@ static thread_error_t thread_ctx_init(thread_ctx_t* ctx,
           ? demuxer->demuxer_thread_interval
           // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
           : (int64_t)10e6;
-  ctx->has_pending_packet = ctx->reach_eof = false;
+  ctx->has_pending_packet = false;
   ctx->current_packet = av_packet_alloc();
   ctx->current_packet_idx = SIZE_MAX;
   if (!ctx->current_packet)
@@ -83,16 +83,16 @@ static bool needs_force_push(thread_ctx_t* ctx) {
 }
 
 static int read_frame(thread_ctx_t* ctx) {
-  if (ctx->reach_eof || ctx->has_pending_packet)
+  if (ctx->demuxer->reach_eof || ctx->has_pending_packet)
     return DT_ERROR_SUCCESS;
   int err = av_read_frame(ctx->demuxer->ctx, ctx->current_packet);
   if (err < 0 && err != AVERROR_EOF)
     return err;
-  ctx->has_pending_packet = err != AVERROR_EOF || !ctx->reach_eof;
+  ctx->has_pending_packet = err != AVERROR_EOF || !ctx->demuxer->reach_eof;
   if (err == AVERROR_EOF) {
-    if (!ctx->reach_eof)
+    if (!ctx->demuxer->reach_eof)
       sve4_log_debug("ffmpeg_demux_thread: reached EOF");
-    ctx->reach_eof = true;
+    ctx->demuxer->reach_eof = true;
     av_packet_unref(ctx->current_packet);
   }
 
@@ -109,7 +109,7 @@ static int read_frame(thread_ctx_t* ctx) {
 static int handle_seek_request(thread_ctx_t* ctx, int64_t seek_req) {
   assert(seek_req >= 0);
   // flush everything
-  ctx->has_pending_packet = ctx->reach_eof = false;
+  ctx->has_pending_packet = ctx->demuxer->reach_eof = false;
   av_packet_unref(ctx->current_packet);
 
   // NOLINTNEXTLINE(misc-include-cleaner)

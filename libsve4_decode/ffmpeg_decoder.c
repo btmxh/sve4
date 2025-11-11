@@ -59,11 +59,11 @@ static void convert_pts(AVFrame* frame, int64_t orig_time_base_num,
   frame->duration = av_rescale(frame->duration, num, den);
 }
 
-static sve4_decode_error_t map_frame_to_sve4_frame(
-    AVFrame* _Nonnull av_frame, AVCodecContext* _Nonnull ctx,
-    sve4_decode_frame_t* _Nonnull frame, sve4_allocator_t* frame_allocator) {
+static sve4_decode_error_t
+map_frame_to_sve4_frame(AVFrame* _Nonnull av_frame,
+                        sve4_decode_frame_t* _Nonnull frame,
+                        sve4_allocator_t* frame_allocator) {
   sve4_decode_frame_free(frame);
-  convert_pts(av_frame, ctx->time_base.num, ctx->time_base.den);
 
   frame->kind = SVE4_DECODE_FRAME_KIND_RAM_FRAME;
   frame->format = (sve4_fmt_t){
@@ -133,10 +133,13 @@ sve4_decode_error_t sve4_decode_ffmpeg_decoder_inner_get_frame(
 
     sve4_log_debug("ffmpeg: decoder %p produced AVFrame* %p", (void*)decoder,
                    (void*)av_frame);
+
+    convert_pts(av_frame, decoder->ctx->time_base.num,
+                decoder->ctx->time_base.den);
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
-    err = map_frame_to_sve4_frame(av_frame, decoder->ctx, frame,
-                                  decoder->frame_allocator);
+    err = map_frame_to_sve4_frame(av_frame, frame, decoder->frame_allocator);
 #pragma GCC diagnostic pop
     if (!sve4_decode_error_is_success(err))
       goto fail;
