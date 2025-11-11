@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "libsve4_log/init_test.h"
+
 #include <libavcodec/avcodec.h>
 #include <libavcodec/packet.h>
 #include <tinycthread.h>
@@ -249,5 +251,8 @@ static const MunitSuite test_suite = {"/sve4_ffmpeg_packet_queue",
                                       MUNIT_SUITE_OPTION_NONE};
 
 int main(int argc, char* argv[]) {
-  return munit_suite_main(&test_suite, NULL, argc, argv);
+  sve4_log_test_setup();
+  int ret = munit_suite_main(&test_suite, NULL, argc, argv);
+  sve4_log_test_teardown();
+  return ret;
 }
