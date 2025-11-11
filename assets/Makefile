@@ -1,12 +1,12 @@
-# Get all .txt files that are NOT already .dos.txt
-SRC := $(filter-out %.dos.txt, $(wildcard *.txt))
-DST := $(SRC:.txt=.dos.txt)
+# Get all .unix.txt files that are NOT already .dos.txt
+SRC := $(wildcard *.unix.txt)
+DST := $(SRC:.unix.txt=.dos.txt)
 
 # Default target
 all: $(DST)
 
 # Conversion rule
-%.dos.txt: %.txt
+%.dos.txt: %.unix.txt
 	sed 's/$$/\r/' $< > $@
 
 # Clean generated files
