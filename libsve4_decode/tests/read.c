@@ -65,7 +65,12 @@ static MunitResult test_text_read_file_truncated(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
-  const char* url = ASSETS_DIR "alice.txt";
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
 
   char buffer[16];
   size_t bufsize = sizeof(buffer);
@@ -82,6 +87,249 @@ static MunitResult test_text_read_file_truncated(const MunitParameter params[],
 
   munit_assert_string_equal(text, "guys they make a");
 
+  return MUNIT_OK;
+}
+
+static MunitResult
+test_text_read_file_truncated_alloc(const MunitParameter params[],
+                                    void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
+
+  char* buffer = NULL;
+#define BUFFER_SIZE 16
+  size_t bufsize = BUFFER_SIZE;
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, false);
+  assert_success(err);
+
+  munit_assert_ptr_not_null(buffer);
+  munit_assert_size(bufsize, ==, BUFFER_SIZE);
+
+  char text[BUFFER_SIZE + 1];
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  memcpy(text, buffer, BUFFER_SIZE);
+  text[BUFFER_SIZE] = '\0';
+#undef BUFFER_SIZE
+
+  munit_assert_string_equal(text, "guys they make a");
+
+  sve4_free(NULL, buffer);
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_text_read_file_overflow(const MunitParameter params[],
+                                                void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
+
+  char buffer[2048];
+  size_t bufsize = sizeof(buffer);
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, false);
+  assert_success(err);
+
+  munit_assert_size(bufsize, ==, 117);
+  buffer[117] = '\0';
+  munit_assert_string_equal(
+      buffer, "guys they make a new song about a robot after the end of the "
+              "world to diss ksdgk\nfirst album is so back wtf lmfaoooo\n");
+
+  return MUNIT_OK;
+}
+
+static MunitResult
+test_text_read_file_overflow_alloc(const MunitParameter params[],
+                                   void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
+
+  char* buffer = NULL;
+#define BUFFER_SIZE 2048
+  size_t bufsize = BUFFER_SIZE;
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, false);
+  assert_success(err);
+
+  munit_assert_size(bufsize, ==, 117);
+  buffer[117] = '\0';
+  munit_assert_string_equal(
+      buffer, "guys they make a new song about a robot after the end of the "
+              "world to diss ksdgk\nfirst album is so back wtf lmfaoooo\n");
+
+  sve4_free(NULL, buffer);
+
+  return MUNIT_OK;
+}
+
+static bool is_dos_txt_file(const char* url) {
+#define SUFFIX_DOS_TXT ".dos.txt"
+#define SUFFIX_DOS_TXT_LEN (sizeof(SUFFIX_DOS_TXT) - 1)
+  size_t url_len = strlen(url);
+  if (url_len < SUFFIX_DOS_TXT_LEN)
+    return false;
+  return strcmp(&url[url_len - SUFFIX_DOS_TXT_LEN], SUFFIX_DOS_TXT) == 0;
+}
+
+static MunitResult test_binary_read_file_alloc(const MunitParameter params[],
+                                               void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
+
+  char* buffer = NULL;
+  size_t bufsize = SIZE_MAX;
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, true);
+  assert_success(err);
+
+  munit_assert_ptr_not_null(buffer);
+
+  size_t expected_size = is_dos_txt_file(url) ? 119 : 117;
+  munit_assert_size(bufsize, ==, expected_size);
+
+  char text[120];
+  memcpy(text, buffer, bufsize);
+  text[bufsize] = '\0';
+
+  munit_assert_string_equal(
+      text,
+      is_dos_txt_file(url)
+          ? "guys they make a new song about a robot after the end of the "
+            "world to diss ksdgk\r\nfirst album is so back wtf lmfaoooo\r\n"
+          : "guys they make a new song about a robot after the end of the "
+            "world to diss ksdgk\nfirst album is so back wtf lmfaoooo\n");
+
+  sve4_free(NULL, buffer);
+  return MUNIT_OK;
+}
+
+static MunitResult
+test_binary_read_file_truncated(const MunitParameter params[],
+                                void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
+
+  char buffer[16];
+  size_t bufsize = sizeof(buffer);
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, true);
+  assert_success(err);
+
+  munit_assert_size(bufsize, ==, sizeof(buffer));
+
+  char text[sizeof(buffer) + 1];
+  // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)
+  memcpy(text, buffer, sizeof(buffer));
+  text[sizeof(buffer)] = '\0';
+
+  munit_assert_string_equal(text, "guys they make a");
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_binary_read_file_overflow(const MunitParameter params[],
+                                                  void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = NULL;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "url") == 0)
+      url = par->value;
+  }
+  munit_assert_not_null(url);
+
+  char buffer[2048];
+  size_t bufsize = sizeof(buffer);
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, true);
+  assert_success(err);
+
+  size_t expected_size = is_dos_txt_file(url) ? 119 : 117;
+  munit_assert_size(bufsize, ==, expected_size);
+  buffer[bufsize] = '\0';
+
+  munit_assert_string_equal(
+      buffer,
+      is_dos_txt_file(url)
+          ? "guys they make a new song about a robot after the end of the "
+            "world to diss ksdgk\r\nfirst album is so back wtf lmfaoooo\r\n"
+          : "guys they make a new song about a robot after the end of the "
+            "world to diss ksdgk\nfirst album is so back wtf lmfaoooo\n");
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_read_real_alice(const MunitParameter params[],
+                                        void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  // FFmpeg doesn't support HTTPS in the CI vcpkg configuration
+  const char* url = "http://gaia.cs.umass.edu/wireshark-labs/alice.txt";
+
+  char* buffer = NULL;
+  size_t bufsize = SIZE_MAX;
+
+  // FFmpeg does not support reading text using the avio API, so we can't
+  // really set binary to false here.
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, true);
+
+  assert_success(err);
+
+  munit_assert_ptr_not_null(buffer);
+  munit_assert_size(bufsize, ==, 152138);
+
+  // HTTP line separators are \r\n, and since we read in binary mode, we
+  // expect to see them as-is.
+  const char expected_header[] =
+      "                ALICE'S ADVENTURES IN WONDERLAND\r\n"
+      "\r\n"
+      "                          Lewis Carroll\r\n";
+  char header[sizeof(expected_header)];
+  memcpy(header, buffer, sizeof(expected_header) - 1);
+  header[sizeof(expected_header) - 1] = '\0';
+
+  munit_assert_string_equal(header, expected_header);
+
+  sve4_free(NULL, buffer);
   return MUNIT_OK;
 }
 
@@ -123,6 +371,116 @@ static const MunitSuite test_suite = {
                  }},
                 {NULL, NULL},
             },
+        },
+        {
+            "/text/read_file_truncated_alloc",
+            test_text_read_file_truncated_alloc,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"url",
+                 (char*[]){
+                     ASSETS_DIR "alice.txt",
+#ifdef _WIN32
+                     ASSETS_DIR "alice.dos.txt",
+#endif
+                     NULL,
+                 }},
+                {NULL, NULL},
+            },
+        },
+        {
+            "text/read_file_overflow",
+            test_text_read_file_overflow,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"url",
+                 (char*[]){
+                     ASSETS_DIR "alice.txt",
+#ifdef _WIN32
+                     ASSETS_DIR "alice.dos.txt",
+#endif
+                     NULL,
+                 }},
+                {NULL, NULL},
+            },
+        },
+        {
+            "text/read_file_overflow_alloc",
+            test_text_read_file_overflow_alloc,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"url",
+                 (char*[]){
+                     ASSETS_DIR "alice.txt",
+#ifdef _WIN32
+                     ASSETS_DIR "alice.dos.txt",
+#endif
+                     NULL,
+                 }},
+                {NULL, NULL},
+            },
+        },
+        {
+            "binary/read_file_alloc",
+            test_binary_read_file_alloc,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"url",
+                 (char*[]){
+                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.dos.txt",
+                     NULL,
+                 }},
+                {NULL, NULL},
+            },
+        },
+        {
+            "binary/read_file_truncated",
+            test_binary_read_file_truncated,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"url",
+                 (char*[]){
+                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.dos.txt",
+                     NULL,
+                 }},
+                {NULL, NULL},
+            },
+        },
+        {
+            "binary/read_file_overflow",
+            test_binary_read_file_overflow,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"url",
+                 (char*[]){
+                     ASSETS_DIR "alice.txt",
+                     ASSETS_DIR "alice.dos.txt",
+                     NULL,
+                 }},
+                {NULL, NULL},
+            },
+        },
+        {
+            "binary/real_alice",
+            test_read_real_alice,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
         },
         {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE,
          NULL} /* Mark the end of the array */

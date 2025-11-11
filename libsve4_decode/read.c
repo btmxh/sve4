@@ -82,6 +82,7 @@ static sve4_decode_error_t sve4_decode_read_file_common(
 
   // if buffer is pre-allocated or size is available, then read in one go
   char* buf = *buffer;
+  bool needs_alloc = !buf;
   if (buf || to_read < SIZE_MAX) {
     if (!buf)
       *buffer = buf = sve4_malloc(alloc, to_read);
@@ -93,7 +94,8 @@ static sve4_decode_error_t sve4_decode_read_file_common(
     err = read_func(file, buf, to_read, bufsize);
     if (!sve4_decode_error_is_success(err)) {
       close_func(file);
-      sve4_free(alloc, buf);
+      if (needs_alloc)
+        sve4_free(alloc, buf);
       return err;
     }
 
@@ -239,18 +241,16 @@ static sve4_decode_error_t ffmpeg_read_func(void* _Nonnull file,
   while (total < to_read) {
     int num_read =
         avio_read(io_ctx, (unsigned char*)buf + total, (int)(to_read - total));
-    if (num_read == 0) {
-      if (total == 0)
-        return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_EOF);
+    if (num_read == AVERROR_EOF)
       break;
-    }
     if (num_read < 0) {
       return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_IO);
     }
     total += (size_t)num_read;
   }
   *nread = total;
-  return sve4_decode_success;
+  return total > 0 ? sve4_decode_success
+                   : sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_EOF);
 }
 
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
