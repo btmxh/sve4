@@ -36,8 +36,6 @@ sve4_ffmpeg_packet_queue_init(sve4_ffmpeg_packet_queue_t* _Nonnull queue,
   if (cnd_init(&queue->push_condvar) != thrd_success) {
     // NOLINTNEXTLINE(misc-include-cleaner)
     mtx_destroy(&queue->mutex);
-    // NOLINTNEXTLINE(misc-include-cleaner)
-    cnd_destroy(&queue->push_condvar);
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_THREADS);
   }
   // NOLINTNEXTLINE(misc-include-cleaner)
@@ -45,7 +43,7 @@ sve4_ffmpeg_packet_queue_init(sve4_ffmpeg_packet_queue_t* _Nonnull queue,
     // NOLINTNEXTLINE(misc-include-cleaner)
     mtx_destroy(&queue->mutex);
     // NOLINTNEXTLINE(misc-include-cleaner)
-    cnd_destroy(&queue->pop_condvar);
+    cnd_destroy(&queue->push_condvar);
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_THREADS);
   }
   if (!(queue->queue = av_fifo_alloc2(initial_capacity, sizeof(AVPacket*),
