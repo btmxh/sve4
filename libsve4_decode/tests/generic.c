@@ -62,91 +62,10 @@ static MunitResult test_simple_webp(const MunitParameter params[],
                                                .backend = backend,
                                            });
   assert_success(err);
-  sve4_decode_frame_t frame = {0};
-  err = sve4_decode_decoder_get_frame(&decoder, &frame, NULL);
-  assert_success(err);
 
-  munit_assert_int((int)frame.kind, ==, SVE4_DECODE_FRAME_KIND_RAM_FRAME);
-  munit_assert_size(frame.width, ==, 4);
-  munit_assert_size(frame.height, ==, 4);
-  munit_assert_int((int)frame.format.kind, ==, SVE4_PIXFMT);
-  munit_assert_true(
-      sve4_pixfmt_eq(frame.format.pixfmt,
-                     sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_RGBA8)) ||
-      sve4_pixfmt_eq(frame.format.pixfmt,
-                     sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_ARGB8)));
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
-  sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
-  const uint8_t* frame_data = ram_frame->data[0];
-#pragma GCC diagnostic pop
-
-  munit_assert_ptr_not_null(frame_data);
-  uint32_t u32_frame_data[16];
-  for (size_t row = 0; row < 4; ++row) {
-    for (size_t col = 0; col < 4; ++col) {
-      size_t pos = row * 4 + col;
-      size_t ram_frame_pos = col * 4 + row * ram_frame->linesizes[0];
-      if (sve4_pixfmt_eq(frame.format.pixfmt,
-                         sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_RGBA8)))
-        u32_frame_data[pos] = rgba8(&frame_data[ram_frame_pos]);
-      else if (sve4_pixfmt_eq(frame.format.pixfmt,
-                              sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_ARGB8)))
-        u32_frame_data[pos] = argb8(&frame_data[ram_frame_pos]);
-    }
-  }
-
-  munit_assert_uint32(u32_frame_data[0], ==, 0xFF0000FF);
-  munit_assert_uint32(u32_frame_data[1], ==, 0x00FF00FF);
-  munit_assert_uint32(u32_frame_data[2], ==, 0x00FF00FF);
-  munit_assert_uint32(u32_frame_data[3], ==, 0x000000FF);
-  munit_assert_uint32(u32_frame_data[4], ==, 0x0000FFFF);
-  munit_assert_uint32(u32_frame_data[5], ==, 0xFFFFFFFF);
-  munit_assert_uint32(u32_frame_data[6], ==, 0xFFFF00FF);
-  munit_assert_uint32(u32_frame_data[7], ==, 0x0000FFFF);
-  munit_assert_uint32(u32_frame_data[8], ==, 0x0000FFFF);
-  munit_assert_uint32(u32_frame_data[9], ==, 0x00FFFFFF);
-  munit_assert_uint32(u32_frame_data[10], ==, 0xFF00FFFF);
-  munit_assert_uint32(u32_frame_data[11], ==, 0x0000FFFF);
-  munit_assert_uint32(u32_frame_data[12], ==, 0x000000FF);
-  munit_assert_uint32(u32_frame_data[13], ==, 0x00FF00FF);
-  munit_assert_uint32(u32_frame_data[14], ==, 0x00FF00FF);
-  munit_assert_uint32(u32_frame_data[15], ==, 0xFF0000FF);
-
-  sve4_decode_frame_free(&frame);
-  sve4_decode_decoder_close(&decoder);
-  return MUNIT_OK;
-}
-
-#ifdef SVE4_DECODE_HAVE_FFMPEG
-static MunitResult test_multi_decode_webp(const MunitParameter params[],
-                                          void* user_data) {
-  (void)params;
-  (void)user_data;
-
-  const char* path = ASSETS_DIR "4x4.webp";
-
-  sve4_decode_decoder_t decoders[3] = {0};
-  sve4_decode_error_t err;
-  sve4_buffer_ref_t demuxer = NULL;
-  for (size_t i = 0; i < (sizeof(decoders) / sizeof(decoders[0])); ++i) {
-    sve4_decode_decoder_config_t config = {
-        .url = path,
-        .backend = SVE4_DECODE_DECODER_BACKEND_FFMPEG,
-        .demuxer = sve4_buffer_ref(demuxer),
-    };
-    err = sve4_decode_decoder_open(&decoders[i], &config);
-    assert_success(err);
-    if (!demuxer) {
-      demuxer = sve4_decode_decoder_get_demuxer(&decoders[i]);
-      munit_assert_ptr_not_null(demuxer);
-    }
-  }
-
-  for (size_t i = 0; i < (sizeof(decoders) / sizeof(decoders[0])); ++i) {
+  for (int i = 0; i < 2; ++i) {
     sve4_decode_frame_t frame = {0};
-    err = sve4_decode_decoder_get_frame(&decoders[i], &frame, NULL);
+    err = sve4_decode_decoder_get_frame(&decoder, &frame, NULL);
     assert_success(err);
 
     munit_assert_int((int)frame.kind, ==, SVE4_DECODE_FRAME_KIND_RAM_FRAME);
@@ -198,8 +117,103 @@ static MunitResult test_multi_decode_webp(const MunitParameter params[],
     munit_assert_uint32(u32_frame_data[15], ==, 0xFF0000FF);
 
     sve4_decode_frame_free(&frame);
-    sve4_decode_decoder_close(&decoders[i]);
+
+    // seek to beginning
+    sve4_decode_decoder_seek(&decoder, 0);
   }
+
+  sve4_decode_decoder_close(&decoder);
+  return MUNIT_OK;
+}
+
+#ifdef SVE4_DECODE_HAVE_FFMPEG
+static MunitResult test_multi_decode_webp(const MunitParameter params[],
+                                          void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* path = ASSETS_DIR "4x4.webp";
+
+  sve4_decode_decoder_t decoders[3] = {0};
+  sve4_decode_error_t err;
+  sve4_buffer_ref_t demuxer = NULL;
+  for (size_t i = 0; i < (sizeof(decoders) / sizeof(decoders[0])); ++i) {
+    sve4_decode_decoder_config_t config = {
+        .url = path,
+        .backend = SVE4_DECODE_DECODER_BACKEND_FFMPEG,
+        .demuxer = sve4_buffer_ref(demuxer),
+    };
+    err = sve4_decode_decoder_open(&decoders[i], &config);
+    assert_success(err);
+    if (!demuxer) {
+      demuxer = sve4_decode_decoder_get_demuxer(&decoders[i]);
+      munit_assert_ptr_not_null(demuxer);
+    }
+  }
+
+  for (int j = 0; j < 2; ++j) {
+    for (size_t i = 0; i < (sizeof(decoders) / sizeof(decoders[0])); ++i) {
+      sve4_decode_frame_t frame = {0};
+      err = sve4_decode_decoder_get_frame(&decoders[i], &frame, NULL);
+      assert_success(err);
+
+      munit_assert_int((int)frame.kind, ==, SVE4_DECODE_FRAME_KIND_RAM_FRAME);
+      munit_assert_size(frame.width, ==, 4);
+      munit_assert_size(frame.height, ==, 4);
+      munit_assert_int((int)frame.format.kind, ==, SVE4_PIXFMT);
+      munit_assert_true(
+          sve4_pixfmt_eq(frame.format.pixfmt,
+                         sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_RGBA8)) ||
+          sve4_pixfmt_eq(frame.format.pixfmt,
+                         sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_ARGB8)));
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnullable-to-nonnull-conversion"
+      sve4_decode_ram_frame_t* ram_frame = sve4_buffer_get_data(frame.buffer);
+      const uint8_t* frame_data = ram_frame->data[0];
+#pragma GCC diagnostic pop
+
+      munit_assert_ptr_not_null(frame_data);
+      uint32_t u32_frame_data[16];
+      for (size_t row = 0; row < 4; ++row) {
+        for (size_t col = 0; col < 4; ++col) {
+          size_t pos = row * 4 + col;
+          size_t ram_frame_pos = col * 4 + row * ram_frame->linesizes[0];
+          if (sve4_pixfmt_eq(frame.format.pixfmt,
+                             sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_RGBA8)))
+            u32_frame_data[pos] = rgba8(&frame_data[ram_frame_pos]);
+          else if (sve4_pixfmt_eq(
+                       frame.format.pixfmt,
+                       sve4_pixfmt_default(SVE4_PIXFMT_DEFAULT_ARGB8)))
+            u32_frame_data[pos] = argb8(&frame_data[ram_frame_pos]);
+        }
+      }
+
+      munit_assert_uint32(u32_frame_data[0], ==, 0xFF0000FF);
+      munit_assert_uint32(u32_frame_data[1], ==, 0x00FF00FF);
+      munit_assert_uint32(u32_frame_data[2], ==, 0x00FF00FF);
+      munit_assert_uint32(u32_frame_data[3], ==, 0x000000FF);
+      munit_assert_uint32(u32_frame_data[4], ==, 0x0000FFFF);
+      munit_assert_uint32(u32_frame_data[5], ==, 0xFFFFFFFF);
+      munit_assert_uint32(u32_frame_data[6], ==, 0xFFFF00FF);
+      munit_assert_uint32(u32_frame_data[7], ==, 0x0000FFFF);
+      munit_assert_uint32(u32_frame_data[8], ==, 0x0000FFFF);
+      munit_assert_uint32(u32_frame_data[9], ==, 0x00FFFFFF);
+      munit_assert_uint32(u32_frame_data[10], ==, 0xFF00FFFF);
+      munit_assert_uint32(u32_frame_data[11], ==, 0x0000FFFF);
+      munit_assert_uint32(u32_frame_data[12], ==, 0x000000FF);
+      munit_assert_uint32(u32_frame_data[13], ==, 0x00FF00FF);
+      munit_assert_uint32(u32_frame_data[14], ==, 0x00FF00FF);
+      munit_assert_uint32(u32_frame_data[15], ==, 0xFF0000FF);
+
+      sve4_decode_frame_free(&frame);
+    }
+
+    sve4_decode_decoder_seek(&decoders[0], 0);
+  }
+
+  for (size_t i = 0; i < (sizeof(decoders) / sizeof(decoders[0])); ++i)
+    sve4_decode_decoder_close(&decoders[i]);
 
   return MUNIT_OK;
 }
@@ -218,7 +232,7 @@ static const MunitSuite test_suite = {
                 {"backend",
                  (char*[]){
                      "AUTO",
-#ifdef SVE4_DECODE_HAVE_LIBWEBP
+#ifdef SVE4_DECODE_HAVE_WEBP
                      "LIBWEBP",
 #endif
 #ifdef SVE4_DECODE_HAVE_FFMPEG

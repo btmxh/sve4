@@ -231,7 +231,16 @@ sve4_decode_ffmpeg_demuxer_seek(sve4_buffer_ref_t _Nonnull demuxer_ref,
                  " ns. note that every decoder attached to this demuxer will "
                  "also seek to this position",
                  (void*)demuxer, pos);
+
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
-  atomic_store(&demuxer->seek_request, pos / ((int)1e9 / AV_TIME_BASE));
-  return sve4_decode_success;
+  pos = pos / ((int)1e9 / AV_TIME_BASE);
+
+  if (demuxer->use_thread) {
+    // signal the demuxer thread to perform the seek
+    atomic_store(&demuxer->seek_request, pos);
+    return sve4_decode_success;
+  }
+
+  return sve4_decode_ffmpegerr(
+      av_seek_frame(demuxer->ctx, -1, pos, AVSEEK_FLAG_BACKWARD));
 }
