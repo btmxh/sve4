@@ -37,10 +37,6 @@ struct test_http_server {
   struct mg_context* ctx;
 };
 
-struct static_handler_data {
-  test_http_response_t resp;
-};
-
 /* ---------------- Internal Handlers ---------------- */
 
 static inline void sleep_ms(int ms) {
@@ -51,8 +47,7 @@ static inline void sleep_ms(int ms) {
 }
 
 static int test_http_static_handler(struct mg_connection* conn, void* cbdata) {
-  struct static_handler_data* data = cbdata;
-  const test_http_response_t* resp = &data->resp;
+  const test_http_response_t* resp = cbdata;
 
   const char* ctype = resp->type == TEST_HTTP_BINARY
                           ? "application/octet-stream"
@@ -130,13 +125,10 @@ static inline void test_http_server_stop(test_http_server_t* srv) {
   free(srv);
 }
 
-static inline void
-test_http_server_add_static(test_http_server_t* srv, const char* path,
-                            const test_http_response_t* resp) {
-  struct static_handler_data* data =
-      (struct static_handler_data*)malloc(sizeof(*data));
-  data->resp = *resp;
-  mg_set_request_handler(srv->ctx, path, test_http_static_handler, data);
+static inline void test_http_server_add_static(test_http_server_t* srv,
+                                               const char* path,
+                                               test_http_response_t* resp) {
+  mg_set_request_handler(srv->ctx, path, test_http_static_handler, (void*)resp);
 }
 
 static inline void test_http_server_add_handler(test_http_server_t* srv,
