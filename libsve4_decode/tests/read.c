@@ -333,6 +333,73 @@ static MunitResult test_read_real_alice(const MunitParameter params[],
   return MUNIT_OK;
 }
 
+#ifdef unix
+static MunitResult test_read_file_dev_null_alloc(const MunitParameter params[],
+                                                 void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = "/dev/null";
+
+  char* buffer = NULL;
+  size_t bufsize = SIZE_MAX;
+
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, true);
+
+  assert_success(err);
+
+  munit_assert_size(bufsize, ==, 0);
+
+  sve4_free(NULL, buffer);
+  return MUNIT_OK;
+}
+
+static MunitResult test_read_file_dev_null(const MunitParameter params[],
+                                           void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = "/dev/null";
+
+  char buffer[1024];
+  size_t bufsize = sizeof(buffer);
+
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, true);
+
+  assert_success(err);
+
+  munit_assert_size(bufsize, ==, 0);
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_read_file_dev_zero(const MunitParameter params[],
+                                           void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* url = "/dev/zero";
+
+  char buffer[1024];
+  size_t bufsize = sizeof(buffer);
+
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, true);
+
+  assert_success(err);
+
+  munit_assert_size(bufsize, ==, sizeof(buffer));
+
+  for (size_t i = 0; i < bufsize; ++i) {
+    munit_assert_uint8((uint8_t)buffer[i], ==, 0);
+  }
+
+  return MUNIT_OK;
+}
+#endif
+
 static const MunitSuite test_suite = {
     "/read",
     (MunitTest[]){
@@ -482,6 +549,32 @@ static const MunitSuite test_suite = {
             MUNIT_TEST_OPTION_NONE,
             NULL,
         },
+#ifdef unix
+        {
+            "binary/dev_null",
+            test_read_file_dev_null,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "binary/dev_null_alloc",
+            test_read_file_dev_null_alloc,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "binary/dev_zero",
+            test_read_file_dev_zero,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+#endif
         {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE,
          NULL} /* Mark the end of the array */
     },
