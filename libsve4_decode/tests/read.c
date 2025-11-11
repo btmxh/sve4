@@ -33,6 +33,24 @@
                      SVE4_DECODE_ERROR_DEFAULT_SUCCESS);                       \
   } while (0);
 
+static MunitResult test_file_not_found(const MunitParameter params[],
+                                       void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  // stream alice: https://www.youtube.com/watch?v=Tsk7dbhAQIA
+  const char* url = ASSETS_DIR "alice-in-reitouko.txt";
+
+  char buffer[16];
+  size_t bufsize = sizeof(buffer);
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, false);
+  munit_assert_int((int)err.source, ==, SVE4_DECODE_ERROR_SRC_DEFAULT);
+  munit_assert_int((int)err.error_code, ==, SVE4_DECODE_ERROR_DEFAULT_IO);
+
+  return MUNIT_OK;
+}
+
 static MunitResult test_text_read_file_alloc(const MunitParameter params[],
                                              void* user_data) {
   (void)params;
@@ -514,6 +532,14 @@ static MunitResult test_read_http_basic(const MunitParameter params[],
 static const MunitSuite test_suite = {
     "/read",
     (MunitTest[]){
+        {
+            "/file_not_found",
+            test_file_not_found,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
         {
             "/text/read_file",
             test_text_read_file_alloc,
