@@ -62,6 +62,7 @@ sve4_decode_error_t sve4_decode_ffmpeg_open_demuxer(
   demuxer->demuxer_thread_interval = 0;
   demuxer->seek_request = -1;
 
+  // NOLINTNEXTLINE(misc-include-cleaner)
   if (mtx_init(&demuxer->decoder_linked_list_mtx, mtx_plain) != thrd_success) {
     err = sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_THREADS);
     goto fail;
