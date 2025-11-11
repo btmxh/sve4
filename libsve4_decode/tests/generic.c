@@ -206,7 +206,7 @@ static MunitResult test_multi_decode_webp(const MunitParameter params[],
 #endif
 
 static const MunitSuite test_suite = {
-    "/webp",
+    "/generic",
     (MunitTest[]){
         {
             "/simple_webp",
