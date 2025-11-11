@@ -252,7 +252,7 @@ sve4_decode_error_t sve4_decode_libwebp_open_decoder(
     const sve4_decode_decoder_config_t* _Nonnull config) {
   sve4_decode_error_t err;
   char* buffer = NULL;
-  size_t size = 0;
+  size_t size = SIZE_MAX;
 
   decoder->data = sve4_buffer_create(config->allocator, sizeof(decoder_inner_t),
                                      decoder_destructor);
@@ -261,7 +261,7 @@ sve4_decode_error_t sve4_decode_libwebp_open_decoder(
     goto fail;
   }
   err = sve4_decode_read_url(config->allocator, &buffer, &size, config->url,
-                             true, SIZE_MAX);
+                             true);
   if (!sve4_decode_error_is_success(err))
     goto fail;
 #pragma GCC diagnostic push

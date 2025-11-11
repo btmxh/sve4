@@ -37,12 +37,13 @@ static MunitResult test_text_read_file_alloc(const MunitParameter params[],
   munit_assert_not_null(url);
 
   char* buffer = NULL;
-  size_t bufsize = 0;
+  size_t bufsize = SIZE_MAX;
   sve4_decode_error_t err =
-      sve4_decode_read_url(NULL, &buffer, &bufsize, url, false, SIZE_MAX);
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, false);
   assert_success(err);
 
 #define FILE_SIZE 117
+  munit_assert_ptr_not_null(buffer);
   munit_assert_size(bufsize, ==, FILE_SIZE);
 
   char text[FILE_SIZE + 1];
@@ -68,8 +69,8 @@ static MunitResult test_text_read_file_truncated(const MunitParameter params[],
 
   char buffer[16];
   size_t bufsize = sizeof(buffer);
-  sve4_decode_error_t err = sve4_decode_read_url(
-      NULL, &(char*){buffer}, &bufsize, url, false, SIZE_MAX);
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &(char*){buffer}, &bufsize, url, false);
   assert_success(err);
 
   munit_assert_size(bufsize, ==, sizeof(buffer));

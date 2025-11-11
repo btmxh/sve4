@@ -8,6 +8,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "libsve4_decode/read.h"
 #include "libsve4_log/api.h"
 #include "libsve4_utils/buffer.h"
 
@@ -88,16 +89,20 @@ sve4_decode_decoder_backend_t sve4_decode_select_backend(
   sve4_log_debug("Auto-selecting decoder backend for url %s", config->url);
   if (config->backend != SVE4_DECODE_DECODER_BACKEND_AUTO)
     return config->backend;
-  FILE* file = fopen(config->url, "rb");
-  if (!file)
-    return SVE4_DECODE_DECODER_BACKEND_FFMPEG;
+
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-magic-numbers,readability-magic-numbers)
   char header[64];
-  size_t size = fread(header, 1, sizeof(header), file);
-  fclose(file);
-  sve4_log_debug("Read %zu bytes from file header for backend detection", size);
+  size_t header_size = sizeof(header);
+  sve4_decode_error_t err = sve4_decode_read_url(
+      NULL, &(char*){header}, &header_size, config->url, true);
+  if (!sve4_decode_error_is_success(err)) {
+    sve4_log_debug("Failed to read url %s for backend detection: source=%d, "
+                   "code=%d. Falling back to FFMPEG",
+                   config->url, err.source, err.error_code);
+    return SVE4_DECODE_DECODER_BACKEND_FFMPEG;
+  }
 
-  if (is_webp(header, size)) {
+  if (is_webp(header, header_size)) {
     sve4_log_debug("Detected WEBP format for url %s, using LIBWEBP",
                    config->url);
     return SVE4_DECODE_DECODER_BACKEND_LIBWEBP;
