@@ -50,3 +50,6 @@ target_link_libraries(tinycthread PUBLIC Threads::Threads)
 
 add_library(arena INTERFACE)
 target_include_directories(arena INTERFACE .)
+
+set(CIVETWEB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+add_subdirectory(civetweb)

@@ -7,3 +7,6 @@
 [submodule "extern/arena"]
 	path = extern/arena
 	url = https://github.com/tsoding/arena
+[submodule "extern/civetweb"]
+	path = extern/civetweb
+	url = https://github.com/civetweb/civetweb
