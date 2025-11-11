@@ -86,7 +86,7 @@ static int read_frame(thread_ctx_t* ctx) {
   if (ctx->reach_eof || ctx->has_pending_packet)
     return DT_ERROR_SUCCESS;
   int err = av_read_frame(ctx->demuxer->ctx, ctx->current_packet);
-  if (err < 0)
+  if (err < 0 && err != AVERROR_EOF)
     return err;
   ctx->has_pending_packet = err != AVERROR_EOF || !ctx->reach_eof;
   if (err == AVERROR_EOF) {
