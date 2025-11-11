@@ -415,7 +415,8 @@ static int test_read_pipe_alloc_write_thread(void* ptr) {
   assert(fd >= 0);
   const char msg[] = "Hello from thread FIFO!\n";
   ssize_t num_write = write(fd, msg, sizeof msg - 1);
-  assert(num_write == sizeof msg - 1);
+  if (num_write != sizeof msg - 1)
+    exit(1);
   close(fd);
   return 0;
 }
