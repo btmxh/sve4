@@ -52,7 +52,7 @@ const char* _Nonnull sve4_samplefmt_to_string(sve4_samplefmt_t samplefmt) {
     case SVE4_SAMPLEFMT_DEFAULT_UNKNOWN:
       break;
     case SVE4_SAMPLEFMT_DEFAULT_S16:
-      return "SVE4_S16";
+      return "s16";
     }
     break;
   case SVE4_FMT_SRC_FFMPEG:

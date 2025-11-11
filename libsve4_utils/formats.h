@@ -43,6 +43,14 @@ typedef struct SVE4_UTILS_EXPORT {
   int32_t format;
 } sve4_samplefmt_t;
 
+#define sve4_samplefmt_default(val)                                            \
+  (sve4_samplefmt_t) {                                                         \
+    SVE4_FMT_SRC_DEFAULT, val                                                  \
+  }
+#define sve4_samplefmt_ffmpeg(val)                                             \
+  (sve4_samplefmt_t) {                                                         \
+    SVE4_FMT_SRC_FFMPEG, val                                                   \
+  }
 typedef enum {
   SVE4_GENERICFMT_DEFAULT_UNKNOWN = 0,
 } sve4_genericfmt_default_t;
