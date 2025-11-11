@@ -26,7 +26,7 @@
 #define localtime_r(t, tm) localtime_s(tm, t)
 #endif
 
-#ifdef SVE4_HAS_MUNIT
+#ifdef SVE4_LOG_HAVE_MUNIT
 #include <munit.h>
 #endif
 
@@ -264,17 +264,26 @@ static void log_to_file(sve4_log_record_t* _Nonnull record,
   const char* file = sve4_log_shorten_path(
       file_buf, config ? config->path_shorten.max_length + 1 : 0, record->file,
       config ? config->path_shorten.root_prefix : SVE4_ROOT_DIR);
-  fprintf(out, "%s%s %s%-5s %s%s%s:%zu:%s %s%s%s [%s]%s ", ansi_timestamp,
-          timestamp_buf, ansi_level,
+  //             TIME  LOGLEVEL LOGGERID FILE:LINE  FLOG
+  fprintf(out, "%s%s%s %s%-5s%s %s[%s]%s %s%s:%zu: %s%s%s %s",
+          // timestamp
+          ansi_timestamp, timestamp_buf, ansi_reset,
+          // log level
+          ansi_level,
           record->level >= 0 && record->level < SVE4_LOG_LEVEL_MAX
               ? log_level_names[record->level]
               : "???",
-          ansi_reset, ansi_location, file, record->line, ansi_flog, flog_text,
-          ansi_reset, ansi_id,
+          ansi_reset,
+          // logger id
+          ansi_id,
           config ? config->id_mapping.get_log_id_name(
                        record->id, config->id_mapping.user_data)
                  : "???",
-          ansi_reset);
+          ansi_reset,
+          // file:line
+          ansi_location, file, record->line, ansi_reset,
+          // flog
+          ansi_flog, flog_text, ansi_reset);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
   vfprintf(out, record->msg, record->args);
@@ -407,7 +416,7 @@ void sve4__flogv(sve4_log_id_t log_id, const char* file, size_t line,
   va_end(args);
 }
 
-#ifdef SVE4_HAS_MUNIT
+#ifdef SVE4_LOG_HAVE_MUNIT
 static void log_munit_callback(sve4_log_record_t* _Nonnull record,
                                const sve4_log_config_t* _Nullable conf) {
   (void)conf;

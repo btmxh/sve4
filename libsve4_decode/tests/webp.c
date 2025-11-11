@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "libsve4_log/init_test.h"
+
 #include <libsve4_decode/error.h>
 #include <libsve4_decode/libwebp.h>
 #include <libsve4_decode/ram_frame.h>
@@ -311,5 +313,8 @@ static const MunitSuite test_suite = {
 };
 
 int main(int argc, char* argv[]) {
-  return munit_suite_main(&test_suite, NULL, argc, argv);
+  sve4_log_test_setup();
+  int ret = munit_suite_main(&test_suite, NULL, argc, argv);
+  sve4_log_test_teardown();
+  return ret;
 }

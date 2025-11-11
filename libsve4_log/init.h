@@ -94,7 +94,7 @@ sve4_log_error_t sve4_log_to_file(sve4_log_callback_t* _Nonnull callback,
 SVE4_LOG_EXPORT
 sve4_log_error_t sve4_log_to_stderr(sve4_log_callback_t* _Nonnull callback,
                                     bool force_ansi);
-#ifdef SVE4_HAS_MUNIT
+#ifdef SVE4_LOG_HAVE_MUNIT
 SVE4_LOG_EXPORT
 sve4_log_error_t sve4_log_to_munit(sve4_log_callback_t* _Nonnull callback);
 #endif

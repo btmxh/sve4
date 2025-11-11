@@ -50,3 +50,7 @@ target_link_libraries(tinycthread PUBLIC Threads::Threads)
 
 add_library(arena INTERFACE)
 target_include_directories(arena INTERFACE .)
+
+add_library(civetweb-c-library STATIC civetweb/src/civetweb.c)
+target_include_directories(civetweb-c-library PUBLIC civetweb/include)
+target_compile_definitions(civetweb-c-library PRIVATE -DNO_SSL)

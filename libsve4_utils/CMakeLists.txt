@@ -14,6 +14,12 @@ sve4_generate_export_header(sve4_utils)
 add_library(sve4::utils ALIAS sve4_utils)
 target_link_libraries(sve4_utils PRIVATE arena)
 
+if(FFmpeg_AVUTIL_FOUND)
+    message(STATUS "FFmpeg found, enabling FFmpeg support in sve4_utils")
+    target_compile_definitions(sve4_utils PUBLIC SVE4_UTILS_HAVE_FFMPEG)
+    target_link_libraries(sve4_utils PUBLIC FFmpeg::AVUTIL)
+endif()
+
 if(BUILD_TESTING)
     add_subdirectory(tests)
 endif()

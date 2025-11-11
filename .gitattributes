@@ -1,0 +1,2 @@
+*.unix.txt text eol=lf
+*.dos.txt text eol=crlf

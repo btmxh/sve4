@@ -9,6 +9,7 @@
 #include <libsve4_utils/defines.h>
 #include <webp/demux.h>
 
+#include "decoder.h"
 #include "error.h"
 #include "frame.h"
 
@@ -76,3 +77,8 @@ size_t sve4_decode_libwebp_demux_get_num_frames(
 SVE4_DECODE_EXPORT
 int64_t sve4_decode_libwebp_demux_get_total_duration(
     sve4_decode_libwebp_demux_t* _Nonnull demux);
+
+SVE4_DECODE_EXPORT
+sve4_decode_error_t sve4_decode_libwebp_open_decoder(
+    sve4_decode_decoder_t* _Nonnull decoder,
+    const sve4_decode_decoder_config_t* _Nonnull config);

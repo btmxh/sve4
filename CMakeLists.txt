@@ -23,8 +23,8 @@ if(SVE4_DEVELOPER_MODE)
     include(cmake/dev-mode.cmake)
 endif()
 
+include(cmake/ffmpeg.cmake)
 find_package(WebP QUIET)
-find_package(FFmpeg QUIET)
 find_package(
     Vulkan
     COMPONENTS

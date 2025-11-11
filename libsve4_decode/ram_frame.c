@@ -47,6 +47,8 @@ sve4_decode_error_t sve4_decode_alloc_ram_frame(sve4_decode_frame_t* frame,
     ram_frame->data[i] = &((uint8_t*)ram_frame)[offsets[i]];
   }
 
+  frame->width = width;
+  frame->height = height;
   frame->buffer = buffer;
   frame->format = (sve4_fmt_t){.kind = SVE4_PIXFMT, .pixfmt = fmt};
   frame->kind = SVE4_DECODE_FRAME_KIND_RAM_FRAME;

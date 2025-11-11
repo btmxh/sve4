@@ -8,7 +8,7 @@
 sve4_buffer_ref_t sve4_buffer_create(sve4_allocator_t* _Nullable allocator,
                                      size_t size,
                                      sve4_destructor_t _Nullable destructor) {
-  sve4_buffer_t* buffer = sve4_malloc(allocator, sizeof(sve4_buffer_t) + size);
+  sve4_buffer_t* buffer = sve4_calloc(allocator, sizeof(sve4_buffer_t) + size);
   if (!buffer)
     return NULL;
   buffer->destructor = destructor;

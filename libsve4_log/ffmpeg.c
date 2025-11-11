@@ -30,17 +30,6 @@ static sve4_log_level_t ffmpeg_level_to_sve4(int level) {
   }
 }
 
-// NOLINTNEXTLINE(readability-non-const-parameter)
-static int sve4_ffmpeg_log_cb(void* opaque, void* buf, size_t* nb_elems) {
-  int level = *(const int*)opaque;
-  const char* msg = (const char*)buf;
-  size_t num_chars = *nb_elems;
-
-  sve4_glog(SVE4_LOG_ID_DEFAULT_FFMPEG, __FILE__, __LINE__, false,
-            ffmpeg_level_to_sve4(level), "%.*s", (int)num_chars, msg);
-  return (int)num_chars; // or return 0 could work too idk
-}
-
 // here, FFmpeg does not log its stuff in separated messages, but it can log a
 // message in multiple log calls like so:
 // ```c
@@ -97,9 +86,15 @@ void sve4_log_ffmpeg_callback(void* avcl, int level, const char* fmt,
     // add the rest of the line (from data to ptr + 1) to the fifo
     av_fifo_write(msg, data, (size_t)(ptr + 1 - data));
 
-    // print the fifo
-    av_fifo_read_to_cb(msg, sve4_ffmpeg_log_cb, &(int){level},
-                       &(size_t){av_fifo_can_read(msg)});
+    size_t msg_fmt_len = av_fifo_can_read(msg);
+    char* msg_fmt = sve4_malloc(&arena, msg_fmt_len + 1);
+    if (!msg_fmt) {
+      sve4_panic("sve4_malloc failed in sve4_log_ffmpeg_callback");
+    }
+    av_fifo_read(msg, msg_fmt, msg_fmt_len);
+    msg_fmt[msg_fmt_len] = '\0';
+    sve4_glog(SVE4_LOG_ID_DEFAULT_FFMPEG, __FILE__, __LINE__, false,
+              ffmpeg_level_to_sve4(level), "%.*s", (int)msg_fmt_len, msg_fmt);
   }
 
   // write the rest in the fifo

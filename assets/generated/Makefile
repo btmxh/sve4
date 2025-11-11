@@ -7,6 +7,7 @@ WEBPMUX ?= webpmux
 
 # Default target
 all: $(ASSETS_DIR)/4x4_anim.webp \
+     $(ASSETS_DIR)/4x4_anim.mkv \
      $(ASSETS_DIR)/1x1.webp \
      $(ASSETS_DIR)/valid_4x4.webp \
      $(ASSETS_DIR)/truncated.webp \
@@ -29,6 +30,8 @@ $(ASSETS_DIR)/4x4_anim.webp: $(ASSETS_DIR)/frame1.png $(ASSETS_DIR)/frame2.png $
 	            -d 250 $(ASSETS_DIR)/frame2.png \
 	            -d 400 $(ASSETS_DIR)/frame3.png \
 	            -o $@
+$(ASSETS_DIR)/4x4_anim.mkv: $(ASSETS_DIR)/frame1.png $(ASSETS_DIR)/frame2.png $(ASSETS_DIR)/frame3.png
+	ffmpeg -y -f concat -safe 0 -i 4x4_anim_frames.txt -c:v libx264 -pix_fmt yuv420p -x264-params "lossless=1" -f matroska -write_index 1 $@
 
 # --- Valid still WebP (4x4 red) ---
 $(ASSETS_DIR)/valid_4x4.webp: $(ASSETS_DIR)/valid_4x4.png

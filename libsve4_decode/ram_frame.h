@@ -12,7 +12,7 @@
 
 enum { SVE4_DECODE_RAM_FRAME_MAX_PLANES = 8 };
 
-typedef struct SVE4_DECODE_EXPORT {
+typedef struct {
   uint8_t* _Nullable data[SVE4_DECODE_RAM_FRAME_MAX_PLANES];
   size_t linesizes[SVE4_DECODE_RAM_FRAME_MAX_PLANES];
   char contiguous_data[];
