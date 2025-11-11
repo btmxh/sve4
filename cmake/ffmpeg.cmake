@@ -20,6 +20,11 @@ if(FFMPEG_FOUND)
     target_include_directories(FFmpeg_FFmpeg INTERFACE ${FFMPEG_INCLUDE_DIRS})
     target_link_directories(FFmpeg_FFmpeg INTERFACE ${FFMPEG_LIBRARY_DIRS})
     target_link_libraries(FFmpeg_FFmpeg INTERFACE ${FFMPEG_LIBRARIES})
+
+    if(UNIX AND NOT APPLE)
+        target_link_options(FFmpeg_FFmpeg INTERFACE "-Wl,-Bsymbolic")
+    endif()
+
     add_library(FFmpeg::FFmpeg ALIAS FFmpeg_FFmpeg)
     set(FFmpeg_FOUND ON)
     foreach(_component ${FFmpeg_COMPONENTS})
