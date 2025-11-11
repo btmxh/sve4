@@ -122,7 +122,7 @@ static int handle_seek_request(thread_ctx_t* ctx, int64_t seek_req) {
   for (sve4_decode_ffmpeg_decoder_t* decoder = ctx->demuxer->first_decoder;
        decoder != NULL; decoder = decoder->next) {
     sve4_decode_error_t err =
-        sve4_ffmpeg_packet_queue_flush(&decoder->packet_queue);
+        sve4_ffmpeg_packet_queue_clear(&decoder->packet_queue);
     decoder->last_packet_idx = SIZE_MAX;
     if (!sve4_decode_error_is_success(err)) {
       sve4_log_error("Failed to flush packet queue in demuxer packet thread");

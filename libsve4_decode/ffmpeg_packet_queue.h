@@ -38,7 +38,7 @@ SVE4_DECODE_EXPORT sve4_decode_error_t sve4_ffmpeg_packet_queue_is_empty(
 
 SVE4_DECODE_EXPORT
 sve4_decode_error_t
-sve4_ffmpeg_packet_queue_flush(sve4_ffmpeg_packet_queue_t* _Nonnull queue);
+sve4_ffmpeg_packet_queue_clear(sve4_ffmpeg_packet_queue_t* _Nonnull queue);
 
 SVE4_DECODE_EXPORT
 void sve4_ffmpeg_packet_queue_free(sve4_ffmpeg_packet_queue_t* _Nonnull queue);

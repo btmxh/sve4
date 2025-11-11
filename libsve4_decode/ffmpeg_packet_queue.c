@@ -173,7 +173,7 @@ sve4_ffmpeg_packet_queue_is_empty(sve4_ffmpeg_packet_queue_t* _Nonnull queue,
   if (mtx_lock(&queue->mutex) != thrd_success)
     return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_THREADS);
 
-  *is_empty = av_fifo_can_read(queue->queue) > 0;
+  *is_empty = av_fifo_can_read(queue->queue) == 0;
 
   if (mtx_unlock(&queue->mutex) != thrd_success)
     sve4_log_error("Failed to unlock mutex after getting packet queue status");
@@ -182,7 +182,7 @@ sve4_ffmpeg_packet_queue_is_empty(sve4_ffmpeg_packet_queue_t* _Nonnull queue,
 }
 
 sve4_decode_error_t
-sve4_ffmpeg_packet_queue_flush(sve4_ffmpeg_packet_queue_t* _Nonnull queue) {
+sve4_ffmpeg_packet_queue_clear(sve4_ffmpeg_packet_queue_t* _Nonnull queue) {
   if (!queue->queue)
     return sve4_decode_success;
   if (mtx_lock(&queue->mutex) != thrd_success)
@@ -204,7 +204,7 @@ sve4_ffmpeg_packet_queue_flush(sve4_ffmpeg_packet_queue_t* _Nonnull queue) {
 void sve4_ffmpeg_packet_queue_free(sve4_ffmpeg_packet_queue_t* _Nonnull queue) {
   if (!queue->queue)
     return;
-  sve4_ffmpeg_packet_queue_flush(queue);
+  sve4_ffmpeg_packet_queue_clear(queue);
   av_fifo_freep2(&queue->queue);
   cnd_destroy(&queue->push_condvar);
   cnd_destroy(&queue->pop_condvar);
