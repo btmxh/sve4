@@ -219,6 +219,44 @@ static MunitResult test_multi_decode_webp(const MunitParameter params[],
 }
 #endif
 
+static MunitResult test_nonexistent_file(const MunitParameter params[],
+                                         void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* path = ASSETS_DIR "non_existent_file.webp";
+
+  sve4_decode_decoder_t decoder = {0};
+  sve4_decode_error_t err;
+  err = sve4_decode_decoder_open(
+      &decoder, &(sve4_decode_decoder_config_t){
+                    .url = path,
+                    .backend = SVE4_DECODE_DECODER_BACKEND_AUTO,
+                });
+  munit_assert_false(sve4_decode_error_is_success(err));
+
+  return MUNIT_OK;
+}
+
+static MunitResult test_nonmedia_file(const MunitParameter params[],
+                                      void* user_data) {
+  (void)params;
+  (void)user_data;
+
+  const char* path = ASSETS_DIR "not_a_webp.txt";
+
+  sve4_decode_decoder_t decoder = {0};
+  sve4_decode_error_t err;
+  err = sve4_decode_decoder_open(
+      &decoder, &(sve4_decode_decoder_config_t){
+                    .url = path,
+                    .backend = SVE4_DECODE_DECODER_BACKEND_AUTO,
+                });
+  munit_assert_false(sve4_decode_error_is_success(err));
+
+  return MUNIT_OK;
+}
+
 static const MunitSuite test_suite = {
     "/generic",
     (MunitTest[]){
@@ -253,6 +291,22 @@ static const MunitSuite test_suite = {
             NULL,
         },
 #endif
+        {
+            "/nonexistent_file",
+            test_nonexistent_file,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
+        {
+            "/nonmedia_file",
+            test_nonmedia_file,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            NULL,
+        },
         {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE,
          NULL} /* Mark the end of the array */
     },
