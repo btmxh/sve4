@@ -121,8 +121,8 @@ static sve4_decode_error_t sve4_decode_read_file_common(
       goto fail_paged_read;
     }
 
-    err = read_func(file, (char*)page->data, sizeof(page->data),
-                    &final_page_size);
+    size_t num_read = 0;
+    err = read_func(file, (char*)page->data, sizeof(page->data), &num_read);
     if (err.source == SVE4_DECODE_ERROR_SRC_DEFAULT &&
         err.error_code == SVE4_DECODE_ERROR_DEFAULT_EOF) {
       err = sve4_decode_success;
@@ -132,6 +132,7 @@ static sve4_decode_error_t sve4_decode_read_file_common(
     if (!sve4_decode_error_is_success(err))
       goto fail_paged_read;
 
+    final_page_size = num_read;
     last_page ? (last_page->next = page) : (first_page = page);
     last_page = page;
     total_size += final_page_size;
@@ -143,6 +144,7 @@ static sve4_decode_error_t sve4_decode_read_file_common(
     goto fail_paged_read;
   }
 
+  *bufsize = 0;
   for (page_t* page = first_page; page; page = page->next) {
     size_t copy_size = page->next ? sizeof(page->data) : final_page_size;
     // NOLINTNEXTLINE(clang-analyzer-security.insecureAPI.DeprecatedOrUnsafeBufferHandling)

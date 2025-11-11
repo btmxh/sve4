@@ -51,5 +51,6 @@ target_link_libraries(tinycthread PUBLIC Threads::Threads)
 add_library(arena INTERFACE)
 target_include_directories(arena INTERFACE .)
 
-set(CIVETWEB_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(CIVETWEB_BUILD_TESTING OFF CACHE BOOL "")
+set(CIVETWEB_ENABLE_ASAN OFF CACHE BOOL "")
 add_subdirectory(civetweb)

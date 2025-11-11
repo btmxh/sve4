@@ -15,6 +15,8 @@
 #include <libsve4_utils/allocator.h>
 #include <munit.h>
 
+#include "http.h"
+
 #define ASSETS_DIR "../../../../assets/"
 
 #define assert_success(err)                                                    \
@@ -400,6 +402,64 @@ static MunitResult test_read_file_dev_zero(const MunitParameter params[],
 }
 #endif
 
+static MunitResult test_read_http_basic(const MunitParameter params[],
+                                        void* user_data) {
+  (void)user_data;
+
+  bool chunked = false;
+  bool send_content_length = false;
+  int delay_ms = 0;
+  for (const MunitParameter* par = params; par->name; ++par) {
+    if (strcmp(par->name, "chunked") == 0)
+      chunked = strcmp(par->value, "true") == 0;
+    else if (strcmp(par->name, "send_content_length") == 0)
+      send_content_length = strcmp(par->value, "true") == 0;
+    else if (strcmp(par->name, "delay_ms") == 0)
+      delay_ms = atoi(par->value);
+  }
+
+  // FFmpeg's HTTP implementation requires either chunked encoding or
+  // Content-Length to be present.
+  if (!chunked && !send_content_length)
+    return MUNIT_OK;
+
+  int port = 0;
+  test_http_server_t* server = test_http_server_start_auto(&port);
+  munit_assert_int(port, !=, 0);
+
+  const char data[] = "Hello, World! \r\n\0\x1\x2\n\x3\x4\0\0\0\1\2\3";
+  size_t data_size = sizeof(data) - 1;
+
+  test_http_response_t resp = {
+      .data = data,
+      .size = data_size,
+      .type = TEST_HTTP_TEXT,
+      .send_content_length = send_content_length,
+      .chunked = chunked,
+      .delay_ms = delay_ms,
+  };
+
+  test_http_server_add_static(server, "/test", &resp);
+
+  char url[256];
+  sprintf(url, "http://localhost:%d/test", port);
+
+  char* buffer = NULL;
+  size_t bufsize = SIZE_MAX;
+  sve4_decode_error_t err =
+      sve4_decode_read_url(NULL, &buffer, &bufsize, url, true);
+
+  assert_success(err);
+  munit_assert_ptr_not_null(buffer);
+  munit_assert_size(bufsize, ==, data_size);
+  munit_assert_memory_equal(data_size, buffer, data);
+
+  sve4_free(NULL, buffer);
+
+  test_http_server_stop(server);
+  return MUNIT_OK;
+}
+
 static const MunitSuite test_suite = {
     "/read",
     (MunitTest[]){
@@ -458,7 +518,7 @@ static const MunitSuite test_suite = {
             },
         },
         {
-            "text/read_file_overflow",
+            "/text/read_file_overflow",
             test_text_read_file_overflow,
             NULL,
             NULL,
@@ -476,7 +536,7 @@ static const MunitSuite test_suite = {
             },
         },
         {
-            "text/read_file_overflow_alloc",
+            "/text/read_file_overflow_alloc",
             test_text_read_file_overflow_alloc,
             NULL,
             NULL,
@@ -494,7 +554,7 @@ static const MunitSuite test_suite = {
             },
         },
         {
-            "binary/read_file_alloc",
+            "/binary/read_file_alloc",
             test_binary_read_file_alloc,
             NULL,
             NULL,
@@ -510,7 +570,7 @@ static const MunitSuite test_suite = {
             },
         },
         {
-            "binary/read_file_truncated",
+            "/binary/read_file_truncated",
             test_binary_read_file_truncated,
             NULL,
             NULL,
@@ -526,7 +586,7 @@ static const MunitSuite test_suite = {
             },
         },
         {
-            "binary/read_file_overflow",
+            "/binary/read_file_overflow",
             test_binary_read_file_overflow,
             NULL,
             NULL,
@@ -542,7 +602,7 @@ static const MunitSuite test_suite = {
             },
         },
         {
-            "binary/real_alice",
+            "/binary/real_alice",
             test_read_real_alice,
             NULL,
             NULL,
@@ -551,7 +611,7 @@ static const MunitSuite test_suite = {
         },
 #ifdef unix
         {
-            "binary/dev_null",
+            "/binary/dev_null",
             test_read_file_dev_null,
             NULL,
             NULL,
@@ -559,7 +619,7 @@ static const MunitSuite test_suite = {
             NULL,
         },
         {
-            "binary/dev_null_alloc",
+            "/binary/dev_null_alloc",
             test_read_file_dev_null_alloc,
             NULL,
             NULL,
@@ -567,7 +627,7 @@ static const MunitSuite test_suite = {
             NULL,
         },
         {
-            "binary/dev_zero",
+            "/binary/dev_zero",
             test_read_file_dev_zero,
             NULL,
             NULL,
@@ -575,6 +635,19 @@ static const MunitSuite test_suite = {
             NULL,
         },
 #endif
+        {
+            "/http/basic",
+            test_read_http_basic,
+            NULL,
+            NULL,
+            MUNIT_TEST_OPTION_NONE,
+            (MunitParameterEnum[]){
+                {"chunked", (char*[]){"true", "false", NULL}},
+                {"send_content_length", (char*[]){"true", "false", NULL}},
+                {"delay_ms", (char*[]){"0", "10", NULL}},
+                {NULL, NULL},
+            },
+        },
         {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE,
          NULL} /* Mark the end of the array */
     },
