@@ -66,8 +66,9 @@ static sve4_decode_error_t sve4_decode_read_file_common(
   sve4_decode_error_t err = open_func(url, binary, &file);
   if (!sve4_decode_error_is_success(err))
     return err;
+  if (!file)
+    sve4_panic("open_func returned success but file is NULL");
 
-  assert(file);
   size_t to_read = *bufsize;
   if (to_read == SIZE_MAX) {
     err = get_size(file, &to_read);
