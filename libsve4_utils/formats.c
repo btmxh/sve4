@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdio.h>
+// NOLINTNEXTLINE(misc-include-cleaner)
 #include <stdlib.h>
 
 // sve4_log is not available here
