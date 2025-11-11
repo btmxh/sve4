@@ -51,6 +51,7 @@ target_compile_definitions(
 )
 
 if(WebP_FOUND)
+    message(STATUS "WebP found, enabling WebP support in sve4_decode")
     target_link_libraries(
         sve4_decode
         PUBLIC
@@ -61,6 +62,7 @@ if(WebP_FOUND)
 endif()
 
 if(FFmpeg_AVFORMAT_FOUND AND FFmpeg_AVCODEC_FOUND AND FFmpeg_AVUTIL_FOUND)
+    message(STATUS "FFmpeg found, enabling FFmpeg support in sve4_decode")
     target_link_libraries(
         sve4_decode
         PUBLIC
