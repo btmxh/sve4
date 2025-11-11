@@ -414,8 +414,8 @@ static int test_read_pipe_alloc_write_thread(void* ptr) {
   int fd = open(PIPE_FIFO_URL, O_WRONLY);
   assert(fd >= 0);
   const char msg[] = "Hello from thread FIFO!\n";
-  write(fd, msg, sizeof msg - 1);
-  sleep(2);
+  ssize_t num_write = write(fd, msg, sizeof msg - 1);
+  assert(num_write == sizeof msg - 1);
   close(fd);
   return 0;
 }
