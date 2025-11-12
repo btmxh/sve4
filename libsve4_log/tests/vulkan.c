@@ -49,10 +49,11 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
                   .engineVersion = VK_MAKE_VERSION(1, 0, 0),
                   .apiVersion = VK_API_VERSION_1_0,
               },
-          .enabledExtensionCount = 1,
+          .enabledExtensionCount = 2,
           .ppEnabledExtensionNames =
               (const char*[]){
                   VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
+                  VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
               },
       },
       NULL, &instance);
