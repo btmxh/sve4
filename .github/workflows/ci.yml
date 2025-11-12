@@ -14,8 +14,6 @@ jobs:
     runs-on: ubuntu-24.04
 
     if: github.repository_owner == 'btmxh'
-    env:
-      VK_ICD_FILENAMES: $HOME/swiftshader/vk_icd.json
 
     steps:
     # This one weird trick speeds up every build! - @alxndrsn
@@ -52,6 +50,8 @@ jobs:
         # TODO: test on both sw implementations?
         install_swiftshader: true
         # install_lavapipe: true
+    - name: Set Vulkan ICD path
+      run: echo "VK_ICD_FILENAMES=$HOME/swiftshader/vk_swiftshader_icd.json" >> $GITHUB_ENV
 
     - name: Configure
       run: cmake --preset=ci-coverage -Wno-error=dev
@@ -78,7 +78,6 @@ jobs:
     env:
       CC: clang-18
       CXX: clang++-18
-      VK_ICD_FILENAMES: $HOME/swiftshader/vk_icd.json
 
     steps:
     - name: Disable man-db dpkg trigger
@@ -110,6 +109,8 @@ jobs:
         # TODO: test on both sw implementations?
         install_swiftshader: true
         # install_lavapipe: true
+    - name: Set Vulkan ICD path
+      run: echo "VK_ICD_FILENAMES=$HOME/swiftshader/vk_swiftshader_icd.json" >> $GITHUB_ENV
 
     - name: Configure
       run: cmake --preset=ci-sanitize -Wno-error=dev
@@ -148,8 +149,6 @@ jobs:
           vcpkg_triplet: x64-windows-release
 
     runs-on: ${{ matrix.os }}
-    env:
-      VK_ICD_FILENAMES: ${{ matrix.os == 'windows-2022' && 'C:\\swiftshader\\vk_swiftshader_icd.json' || '$HOME/swiftshader/vk_swiftshader_icd.json' }}
 
     steps:
     - name: Disable man-db dpkg trigger
@@ -200,6 +199,15 @@ jobs:
         # TODO: test on both sw implementations?
         install_swiftshader: true
         # install_lavapipe: true
+
+    - name: Set Vulkan ICD path (Windows)
+      if: matrix.os == 'windows-2022'
+      shell: bash
+      run: echo "VK_ICD_FILENAMES=C:\\swiftshader\\vk_swiftshader_icd.json" >> $GITHUB_ENV
+
+    - name: Set Vulkan ICD path (Unix)
+      if: matrix.os != 'windows-2022'
+      run: echo "VK_ICD_FILENAMES=$HOME/swiftshader/vk_swiftshader_icd.json" >> $GITHUB_ENV
 
     - name: Setup MultiToolTask
       if: matrix.os == 'windows-2022'
