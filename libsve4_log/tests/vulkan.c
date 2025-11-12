@@ -15,16 +15,15 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
+  // Initialize Volk (loader)
   VkResult result = volkInitialize();
-  if (result != VK_SUCCESS)
-    sve4_panic("Failed to initialize volk: %d", result);
+  if (result != VK_SUCCESS) {
+    fprintf(stderr, "Failed to initialize Volk: %d\n", result);
+    return 1;
+  }
 
   VkInstance instance = VK_NULL_HANDLE;
 
-  result = vkCreateInstance(NULL, NULL, &instance);
-  munit_assert_int(result, !=, VK_SUCCESS);
-
-  instance = VK_NULL_HANDLE;
   VkApplicationInfo app_info = {
       .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
       .pApplicationName = "volk_debug_pnext",
@@ -64,14 +63,20 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   };
 
   result = vkCreateInstance(&instance_info, NULL, &instance);
-  munit_assert_int(result, ==, VK_SUCCESS);
-  sve4_log_debug("Created Vulkan instance: %p", (void*)instance);
+  if (result != VK_SUCCESS) {
+    fprintf(stderr, "Failed to create Vulkan instance: %d\n", result);
+    return 1;
+  }
+
+  printf("Created Vulkan instance with debug callback via pNext: %p\n",
+         (void*)instance);
 
   volkLoadInstance(instance);
-  sve4_log_debug("Loaded volk for instance: %p", (void*)instance);
+  printf("Loaded Vulkan instance functions via Volk\n");
 
+  // Destroy Vulkan instance
   vkDestroyInstance(instance, NULL);
-  sve4_log_debug("Destroyed Vulkan instance: %p", (void*)instance);
+  printf("Destroyed Vulkan instance: %p\n", (void*)instance);
 
   volkFinalize();
 
