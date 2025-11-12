@@ -1,31 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "libsve4_log/vulkan.h"
 #include "libsve4_utils/volk.h"
-
-// Debug callback for VK_EXT_debug_utils
-static VKAPI_ATTR VkBool32 VKAPI_CALL
-debug_callback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-               VkDebugUtilsMessageTypeFlagsEXT messageTypes,
-               const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
-               void* pUserData) {
-
-  (void)messageTypes;
-  (void)pUserData;
-
-  if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
-    fprintf(stdout, "VERBOSE: %s\n", pCallbackData->pMessage);
-  } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-    fprintf(stdout, "INFO: %s\n", pCallbackData->pMessage);
-  } else if (messageSeverity &
-             VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-    fprintf(stderr, "WARNING: %s\n", pCallbackData->pMessage);
-  } else if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
-    fprintf(stderr, "ERROR: %s\n", pCallbackData->pMessage);
-  }
-
-  return VK_FALSE; // Do not abort Vulkan call
-}
 
 int main(void) {
   // Initialize Volk (loader)
@@ -57,7 +34,7 @@ int main(void) {
       .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                      VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
                      VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-      .pfnUserCallback = debug_callback,
+      .pfnUserCallback = sve4_log_vulkan_callback,
       .pUserData = NULL,
   };
 
