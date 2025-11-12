@@ -15,10 +15,11 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
-  VkInstance instance;
+  VkInstance instance = VK_NULL_HANDLE;
   VkResult result = vkCreateInstance(NULL, NULL, &instance);
   munit_assert_int(result, !=, VK_SUCCESS);
 
+  instance = VK_NULL_HANDLE;
   result = vkCreateInstance(
       &(VkInstanceCreateInfo){
           .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -56,9 +57,13 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
       },
       NULL, &instance);
   munit_assert_int(result, ==, VK_SUCCESS);
+  sve4_log_debug("Created Vulkan instance: %p", (void*)instance);
+
   volkLoadInstance(instance);
+  sve4_log_debug("Loaded volk for instance: %p", (void*)instance);
 
   vkDestroyInstance(instance, NULL);
+  sve4_log_debug("Destroyed Vulkan instance: %p", (void*)instance);
 
   return MUNIT_OK;
 }
