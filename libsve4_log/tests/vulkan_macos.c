@@ -35,16 +35,30 @@ int main(void) {
     return 1;
   }
 
-  // Create Vulkan instance
   VkInstance instance = VK_NULL_HANDLE;
 
   VkApplicationInfo app_info = {
       .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-      .pApplicationName = "volk_debug_test",
+      .pApplicationName = "volk_debug_pnext",
       .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
       .pEngineName = "none",
       .engineVersion = VK_MAKE_VERSION(1, 0, 0),
       .apiVersion = VK_API_VERSION_1_0,
+  };
+
+  // Prepare debug messenger create info to attach via pNext
+  VkDebugUtilsMessengerCreateInfoEXT debug_info = {
+      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
+      .pNext = NULL,
+      .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+                         VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+                         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+                         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
+      .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+                     VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
+                     VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
+      .pfnUserCallback = debug_callback,
+      .pUserData = NULL,
   };
 
   const char* extensions[] = {VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
@@ -52,7 +66,7 @@ int main(void) {
 
   VkInstanceCreateInfo instance_info = {
       .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
-      .pNext = NULL,
+      .pNext = &debug_info, // <-- attach debug messenger via pNext
       .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
       .pApplicationInfo = &app_info,
       .enabledExtensionCount = 2,
@@ -67,50 +81,11 @@ int main(void) {
     return 1;
   }
 
-  printf("Created Vulkan instance: %p\n", (void*)instance);
+  printf("Created Vulkan instance with debug callback via pNext: %p\n",
+         (void*)instance);
 
-  // Load instance-level Vulkan functions via Volk
   volkLoadInstance(instance);
-  printf("Loaded Volk instance functions\n");
-
-  // Create debug messenger
-  VkDebugUtilsMessengerCreateInfoEXT debug_info = {
-      .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
-      .messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
-                         VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-                         VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                         VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-      .messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                     VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                     VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-      .pfnUserCallback = debug_callback,
-      .pUserData = NULL,
-  };
-
-  VkDebugUtilsMessengerEXT debug_messenger;
-  PFN_vkCreateDebugUtilsMessengerEXT fpCreateDebugMessenger =
-      (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-          instance, "vkCreateDebugUtilsMessengerEXT");
-  if (!fpCreateDebugMessenger) {
-    fprintf(stderr, "Failed to load vkCreateDebugUtilsMessengerEXT\n");
-    return 1;
-  }
-
-  result =
-      fpCreateDebugMessenger(instance, &debug_info, NULL, &debug_messenger);
-  if (result != VK_SUCCESS) {
-    fprintf(stderr, "Failed to create debug messenger: %d\n", result);
-    return 1;
-  }
-
-  printf("Debug messenger created\n");
-
-  // Destroy debug messenger
-  PFN_vkDestroyDebugUtilsMessengerEXT fpDestroyDebugMessenger =
-      (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(
-          instance, "vkDestroyDebugUtilsMessengerEXT");
-  fpDestroyDebugMessenger(instance, debug_messenger, NULL);
-  printf("Debug messenger destroyed\n");
+  printf("Loaded Vulkan instance functions via Volk\n");
 
   // Destroy Vulkan instance
   vkDestroyInstance(instance, NULL);
