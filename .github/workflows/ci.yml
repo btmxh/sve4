@@ -215,7 +215,7 @@ jobs:
 
     - name: Set Vulkan ICD path (macOS)
       if: matrix.os == 'macos-14'
-      run: echo "VK_ICD_FILENAMES=$VULKAN_SDK/etc/vulkan/icd.d/MoltenVK_icd.json" >> $GITHUB_ENV
+      run: echo "VK_ICD_FILENAMES=$VULKAN_SDK/share/vulkan/icd.d/MoltenVK_icd.json" >> $GITHUB_ENV
 
     - name: Configure
       shell: bash
