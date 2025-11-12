@@ -230,6 +230,7 @@ jobs:
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_decode\Release"
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_log\Release"
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_utils\Release"
+        Add-Content "$env:GITHUB_PATH" "$env:VULKAN_SDK\Bin"
 
     - name: Build
       run: cmake --build build/ci --config Release -j 2
