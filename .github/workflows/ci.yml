@@ -231,7 +231,7 @@ jobs:
     - name: Setup PATH (system dependencies)
       if: matrix.os == 'windows-2022'
       run: |
-        Add-Content "$env:GITHUB_PATH" "$env:VULKAN_SDK\Bin"
+        Add-Content "$env:GITHUB_PATH" "$env:VULKAN_SDK\Runtime\x64"
 
     - name: Setup PATH (sve4 DLLs)
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
