@@ -20,6 +20,7 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   result = vkCreateInstance(
       &(VkInstanceCreateInfo){
           .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+          .flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR,
           .pApplicationInfo =
               &(VkApplicationInfo){
                   .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -28,6 +29,11 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
                   .pEngineName = "sve4_log",
                   .engineVersion = VK_MAKE_VERSION(1, 0, 0),
                   .apiVersion = VK_API_VERSION_1_0,
+              },
+          .enabledExtensionCount = 1,
+          .ppEnabledExtensionNames =
+              (const char*[]){
+                  VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
               },
       },
       NULL, &instance);
