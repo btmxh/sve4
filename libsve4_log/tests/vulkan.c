@@ -4,8 +4,7 @@
 
 #include "libsve4_log/api.h"
 #include "libsve4_log/init_test.h"
-
-#include <volk.h>
+#include "libsve4_utils/volk.h"
 
 #include "munit.h"
 
@@ -17,6 +16,25 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   VkInstance instance;
   VkResult result = vkCreateInstance(NULL, NULL, &instance);
   munit_assert_int(result, !=, VK_SUCCESS);
+
+  result = vkCreateInstance(
+      &(VkInstanceCreateInfo){
+          .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
+          .pApplicationInfo =
+              &(VkApplicationInfo){
+                  .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
+                  .pApplicationName = "sve4_log_test",
+                  .applicationVersion = VK_MAKE_VERSION(1, 0, 0),
+                  .pEngineName = "sve4_log",
+                  .engineVersion = VK_MAKE_VERSION(1, 0, 0),
+                  .apiVersion = VK_API_VERSION_1_0,
+              },
+      },
+      NULL, &instance);
+  munit_assert_int(result, ==, VK_SUCCESS);
+  volkLoadInstance(instance);
+
+  vkDestroyInstance(instance, NULL);
 
   return MUNIT_OK;
 }
