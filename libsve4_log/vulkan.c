@@ -30,7 +30,7 @@ VKAPI_PTR VkBool32 VKAPI_CALL sve4_log_vulkan_callback(
     break;
   }
 
-  sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, __FILE__, __LINE__, true, level,
+  sve4_glog(SVE4_LOG_ID_DEFAULT_VULKAN, __FILE__, __LINE__, false, level,
             "(type: %d) %s\n", (int)message_types, callback_data->pMessage);
 
   (void)user_data;
