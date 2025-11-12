@@ -26,6 +26,14 @@ endif()
 if(Vulkan_FOUND)
     sve4_add_test(
         PREFIX log
+        SOURCE vulkan_macos.c
+        LIBRARIES
+            sve4::log
+            Vulkan::Headers
+            Vulkan::volk
+    )
+    sve4_add_test(
+        PREFIX log
         SOURCE vulkan.c
         LIBRARIES
             sve4::log
