@@ -5,7 +5,7 @@
 
 #include "api.h"
 
-VKAPI_PTR VkBool32 VKAPI_CALL sve4_log_vulkan_callback(
+VKAPI_ATTR VkBool32 VKAPI_CALL sve4_log_vulkan_callback(
     VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
     VkDebugUtilsMessageTypeFlagsEXT message_types,
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
