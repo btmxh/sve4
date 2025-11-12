@@ -213,6 +213,10 @@ jobs:
         Add-Content "$env:GITHUB_ENV" 'UseMultiToolTask=true'
         Add-Content "$env:GITHUB_ENV" 'EnforceProcessCountAcrossBuilds=true'
 
+    - name: Set Vulkan ICD path (macOS)
+      if: matrix.os == 'macos-14'
+      run: echo "VK_ICD_FILENAMES=$VULKAN_SDK/etc/vulkan/icd.d/MoltenVK_icd.json" >> $GITHUB_ENV
+
     - name: Configure
       shell: bash
       run: |
