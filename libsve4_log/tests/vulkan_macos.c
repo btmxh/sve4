@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "libsve4_log/init_test.h"
 #include "libsve4_log/vulkan.h"
 #include "libsve4_utils/volk.h"
 
 int main(void) {
+  sve4_log_test_setup();
   // Initialize Volk (loader)
   VkResult result = volkInitialize();
   if (result != VK_SUCCESS) {
@@ -69,5 +71,6 @@ int main(void) {
   printf("Destroyed Vulkan instance: %p\n", (void*)instance);
 
   volkFinalize();
+  sve4_log_test_teardown();
   return 0;
 }
