@@ -15,8 +15,12 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   (void)params;
   (void)user_data;
 
+  VkResult result = volkInitialize();
+  if (result != VK_SUCCESS)
+    sve4_panic("Failed to initialize volk: %d", result);
+
   VkInstance instance = VK_NULL_HANDLE;
-  VkResult result = vkCreateInstance(NULL, NULL, &instance);
+  result = vkCreateInstance(NULL, NULL, &instance);
   munit_assert_int(result, !=, VK_SUCCESS);
 
   instance = VK_NULL_HANDLE;
@@ -66,6 +70,8 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   vkDestroyInstance(instance, NULL);
   sve4_log_debug("Destroyed Vulkan instance: %p", (void*)instance);
 
+  volkFinalize();
+
   return MUNIT_OK;
 }
 
@@ -90,11 +96,7 @@ static const MunitSuite test_suite = {
 
 int main(int argc, char* argv[]) {
   sve4_log_test_setup();
-  VkResult result = volkInitialize();
-  if (result != VK_SUCCESS)
-    sve4_panic("Failed to initialize volk: %d", result);
   int ret = munit_suite_main(&test_suite, NULL, argc, argv);
-  volkFinalize();
   sve4_log_test_teardown();
   return ret;
 }
