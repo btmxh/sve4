@@ -22,3 +22,14 @@ if(glfw3_FOUND)
             glfw
     )
 endif()
+
+if(Vulkan_FOUND)
+    sve4_add_test(
+        PREFIX log
+        SOURCE vulkan.c
+        LIBRARIES
+            sve4::log
+            Vulkan::Headers
+            Vulkan::volk
+    )
+endif()

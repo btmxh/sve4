@@ -39,6 +39,18 @@ jobs:
           libavutil-dev \
           libglfw3-dev
 
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1
+      with:
+        optional_components: com.lunarg.vulkan.vma, com.lunarg.vulkan.volk
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+        # TODO: test on both sw implementations?
+        install_swiftshader: true
+        # install_lavapipe: true
+
     - name: Configure
       run: cmake --preset=ci-coverage -Wno-error=dev
 
@@ -81,6 +93,18 @@ jobs:
           libavformat-dev \
           libavutil-dev \
           libglfw3-dev
+
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1
+      with:
+        optional_components: com.lunarg.vulkan.vma, com.lunarg.vulkan.volk
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+        # TODO: test on both sw implementations?
+        install_swiftshader: true
+        # install_lavapipe: true
 
     - name: Configure
       run: cmake --preset=ci-sanitize -Wno-error=dev
@@ -157,6 +181,18 @@ jobs:
         cache-key: ${{ matrix.os }}
         revision: master
         token: ${{ github.token }}
+
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1
+      with:
+        optional_components: com.lunarg.vulkan.vma, com.lunarg.vulkan.volk
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+        # TODO: test on both sw implementations?
+        install_swiftshader: true
+        # install_lavapipe: true
 
     - name: Setup MultiToolTask
       if: matrix.os == 'windows-2022'
