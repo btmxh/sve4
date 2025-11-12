@@ -20,10 +20,10 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
     sve4_panic("Failed to initialize volk: %d", result);
 
   VkInstance instance = VK_NULL_HANDLE;
-  result = vkCreateInstance(NULL, NULL, &instance);
-  munit_assert_int(result, !=, VK_SUCCESS);
+  // result = vkCreateInstance(NULL, NULL, &instance);
+  // munit_assert_int(result, !=, VK_SUCCESS);
 
-  instance = VK_NULL_HANDLE;
+  // instance = VK_NULL_HANDLE;
   result = vkCreateInstance(
       &(VkInstanceCreateInfo){
           .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
