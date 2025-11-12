@@ -3,7 +3,7 @@ sve4_add_test(PREFIX log SOURCE error.c LIBRARIES sve4::log)
 sve4_add_test(PREFIX log SOURCE custom.c LIBRARIES sve4::log)
 sve4_add_test(PREFIX log SOURCE tty.c LIBRARIES sve4::log)
 
-if(FFmpeg_FOUND)
+if(FFmpeg_AVUTIL_FOUND)
     sve4_add_test(
         PREFIX log
         SOURCE ffmpeg.c
@@ -20,5 +20,24 @@ if(glfw3_FOUND)
         LIBRARIES
             sve4::log
             glfw
+    )
+endif()
+
+if(Vulkan_FOUND)
+    sve4_add_test(
+        PREFIX log
+        SOURCE vulkan_macos.c
+        LIBRARIES
+            sve4::log
+            Vulkan::Headers
+            Vulkan::volk
+    )
+    sve4_add_test(
+        PREFIX log
+        SOURCE vulkan.c
+        LIBRARIES
+            sve4::log
+            Vulkan::Headers
+            Vulkan::volk
     )
 endif()

@@ -33,11 +33,24 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install -y -q \
+          mesa-vulkan-drivers \
           libwebp-dev \
           libavcodec-dev \
           libavformat-dev \
           libavutil-dev \
           libglfw3-dev
+
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1
+      with:
+        optional_components: com.lunarg.vulkan.vma, com.lunarg.vulkan.volk
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+        # TODO: test on both sw implementations?
+        install_swiftshader: true
+        # install_lavapipe: true
 
     - name: Configure
       run: cmake --preset=ci-coverage -Wno-error=dev
@@ -61,7 +74,9 @@ jobs:
   sanitize:
     runs-on: ubuntu-24.04
 
-    env: { CC: clang-18, CXX: clang++-18 }
+    env:
+      CC: clang-18
+      CXX: clang++-18
 
     steps:
     - name: Disable man-db dpkg trigger
@@ -76,11 +91,24 @@ jobs:
       run: |
         sudo apt-get update -q &&
         sudo apt-get install -y -q \
+          mesa-vulkan-drivers \
           libwebp-dev \
           libavcodec-dev \
           libavformat-dev \
           libavutil-dev \
           libglfw3-dev
+
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1
+      with:
+        optional_components: com.lunarg.vulkan.vma, com.lunarg.vulkan.volk
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+        # TODO: test on both sw implementations?
+        install_swiftshader: true
+        # install_lavapipe: true
 
     - name: Configure
       run: cmake --preset=ci-sanitize -Wno-error=dev
@@ -148,6 +176,10 @@ jobs:
       if: matrix.os == 'ubuntu-24.04'
       run: sudo apt-get install nasm libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev pkg-config
 
+    - name: Install system dependencies (Ubuntu)
+      if: matrix.os == 'ubuntu-24.04'
+      run: sudo apt-get install mesa-vulkan-drivers
+
     - name: Install dependencies
       uses: johnwason/vcpkg-action@v7
       id: vcpkg
@@ -158,11 +190,32 @@ jobs:
         revision: master
         token: ${{ github.token }}
 
+    - name: Install Vulkan SDK
+      uses: jakoch/install-vulkan-sdk-action@v1
+      with:
+        optional_components: com.lunarg.vulkan.vma, com.lunarg.vulkan.volk
+        install_runtime: true
+        cache: true
+        stripdown: true
+
+        # TODO: test on both sw implementations?
+        install_swiftshader: true
+        # install_lavapipe: true
+
+    - name: Register Vulkan ICD (Windows)
+      if: matrix.os == 'windows-2022'
+      shell: pwsh
+      run: reg add "HKLM\SOFTWARE\Khronos\Vulkan\Drivers" /v "C:\Swiftshader\vk_swiftshader_icd.json" /t REG_DWORD /d 0 /f
+
     - name: Setup MultiToolTask
       if: matrix.os == 'windows-2022'
       run: |
         Add-Content "$env:GITHUB_ENV" 'UseMultiToolTask=true'
         Add-Content "$env:GITHUB_ENV" 'EnforceProcessCountAcrossBuilds=true'
+
+    - name: Set Vulkan ICD path (macOS)
+      if: matrix.os == 'macos-14'
+      run: echo "VK_ICD_FILENAMES=$VULKAN_SDK/share/vulkan/icd.d/MoltenVK_icd.json" >> $GITHUB_ENV
 
     - name: Configure
       shell: bash
@@ -175,7 +228,12 @@ jobs:
           -DVCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }} \
           -DVCPKG_MANIFEST_MODE=OFF
 
-    - name: Setup PATH
+    - name: Setup PATH (system dependencies)
+      if: matrix.os == 'windows-2022'
+      run: |
+        Add-Content "$env:GITHUB_PATH" "$env:VULKAN_SDK\Runtime\x64"
+
+    - name: Setup PATH (sve4 DLLs)
       if: matrix.os == 'windows-2022' && matrix.type == 'shared'
       run: |
         Add-Content "$env:GITHUB_PATH" "$(Get-Location)\build\ci\libsve4_decode\Release"

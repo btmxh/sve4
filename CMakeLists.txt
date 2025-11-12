@@ -25,13 +25,7 @@ endif()
 
 include(cmake/ffmpeg.cmake)
 find_package(WebP QUIET)
-find_package(
-    Vulkan
-    COMPONENTS
-        Headers
-        volk
-    QUIET
-)
+find_package(Vulkan COMPONENTS volk QUIET)
 
 find_package(glfw3 QUIET)
 
