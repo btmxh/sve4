@@ -26,7 +26,7 @@
           );
         in
         {
-          default = pkgs.mkShell {
+          default = pkgs.mkShell.override { stdenv = pkgs.clangStdenv; } {
             packages = with pkgs; [
               # build
               cmake
@@ -59,6 +59,8 @@
             shellHook = ''
               export LD_LIBRARY_PATH="${pkgs.vulkan-loader}/lib''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
               export VK_LAYER_PATH="${pkgs.vulkan-validation-layers}/share/vulkan/explicit_layer.d"
+              export CMAKE_COLOR_DIAGNOSTICS=ON
+              export CMAKE_EXPORT_COMPILE_COMMANDS=ON
             '';
           };
         }
