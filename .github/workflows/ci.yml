@@ -131,6 +131,8 @@ jobs:
 
   test:
     strategy:
+      # Don't cancel the other platforms when one platform fails
+      fail-fast: false
       matrix:
         os: [macos-14, ubuntu-24.04, windows-2022]
 
@@ -248,7 +250,11 @@ jobs:
 
     - name: Test
       working-directory: build/ci
-      run: ctest --output-on-failure --no-tests=error -C Release -j 2
+      # MoltenVK aborts on virtualized GitHub macOS runners (the paravirtual
+      # GPU lacks real Metal support), so skip the Vulkan tests there.
+      run: >
+        ctest --output-on-failure --no-tests=error -C Release -j 2
+        ${{ matrix.os == 'macos-14' && '-E test_log_vulkan' || '' }}
 
   docs:
     # Deploy docs only when builds succeed

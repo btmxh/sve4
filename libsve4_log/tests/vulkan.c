@@ -19,7 +19,7 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   VkResult result = volkInitialize();
   if (result != VK_SUCCESS) {
     fprintf(stderr, "Failed to initialize Volk: %d\n", result);
-    return 1;
+    return MUNIT_SKIP;
   }
 
   VkInstance instance = VK_NULL_HANDLE;
@@ -65,7 +65,7 @@ static MunitResult test_vulkan_basic(const MunitParameter params[],
   result = vkCreateInstance(&instance_info, NULL, &instance);
   if (result != VK_SUCCESS) {
     fprintf(stderr, "Failed to create Vulkan instance: %d\n", result);
-    return 1;
+    return MUNIT_SKIP;
   }
 
   printf("Created Vulkan instance with debug callback via pNext: %p\n",
