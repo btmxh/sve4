@@ -34,6 +34,12 @@ if(BUILD_TESTING)
             POSITION_INDEPENDENT_CODE
                 True
     )
+    target_compile_definitions(
+        munit
+        PUBLIC
+            -DMUNIT_NO_BUFFER
+            -DMUNIT_NO_FORK
+    )
 endif()
 
 # add_subdirectory(tinycthread) error due to outdated CMake

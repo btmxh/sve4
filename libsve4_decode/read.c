@@ -250,6 +250,11 @@ static sve4_decode_error_t ffmpeg_read_func(void* _Nonnull file,
     if (num_read == AVERROR_EOF)
       break;
     if (num_read < 0) {
+      // FFmpeg's http.c ends a chunked body with ffurl_closep() + return 0,
+      // then returns AVERROR(EIO) on the next call because s->hd is NULL.
+      // A completed request body is not an IO failure, so treat it as EOF.
+      if (num_read == AVERROR(EIO))
+        break;
       return sve4_decode_defaulterr(SVE4_DECODE_ERROR_DEFAULT_IO);
     }
     total += (size_t)num_read;

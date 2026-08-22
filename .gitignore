@@ -2,3 +2,5 @@ build/
 .cache
 .clangd
 CMakeUserPresets.json
+.direnv/
+result
